@@ -1,2 +1,2 @@
 # bullets
-TDS, TileMap, Multipleer game
+TDS, TileMap, Multiplayer game
