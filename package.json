@@ -1,0 +1,25 @@
+{
+  "name": "toomanybullets",
+  "version": "0.0.1",
+  "description": "Multiplayer TDS Game",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ellementul/TooManyBullets.git"
+  },
+  "keywords": [
+    "TDS",
+    "Shooter",
+    "2D",
+    "Multiplayer"
+  ],
+  "author": "GoodQuestion",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ellementul/TooManyBullets/issues"
+  },
+  "homepage": "https://github.com/ellementul/TooManyBullets#readme"
+}
