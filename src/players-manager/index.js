@@ -2,6 +2,7 @@ const { Member } = require('@ellementul/united-events-environment')
 const { events: { time } } = require('@ellementul/uee-timeticker')
 const startSessionEvent = require("../events/start-session")
 const readyEvent = require("../events/ready-players-manager")
+const updateCountEvent = require("../events/update-players-count")
 const pingEvent = require("../events/ping-players")
 const pongEvent = require("../events/pong-players")
 
@@ -33,6 +34,8 @@ class PlayersManager extends Member {
     this._players.set(playerUuid, {
       pong: false
     })
+
+    this.send(updateCountEvent, { state: this._players.size })
   }
 
   tick({ state: { mstime }}) {
@@ -77,7 +80,8 @@ class PlayersManager extends Member {
   }
 
   diconnectedPlayers(playerUuid) {
-    this._players.delete(playerUuid);
+    this._players.delete(playerUuid)
+    this.send(updateCountEvent, { state: this._players.size })
   }
 }
 
