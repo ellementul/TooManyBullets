@@ -68,7 +68,6 @@ class PlayersManager extends Member {
 
   runOutTimeout() {
     this.clearPlayersWithoutPong()
-    console.log(this._players)
     this.send(pingEvent)
   }
 

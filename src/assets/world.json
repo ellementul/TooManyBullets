@@ -1,0 +1,41 @@
+{
+  "World": "Test",
+  "tileMap": {
+    "orientation":"orthogonal",
+    "renderorder":"right-down",
+    "layers":[
+      {
+        "zIndex":0,
+        "tilesets":[1],
+        "tiles":[1, 2, 3, 4],
+        "position": {
+          "x":0,
+          "y":0
+        },
+        "size": {
+          "height":2,
+          "width":2
+        },
+        "tileSize": {
+          "height":96,
+          "width":96
+        },
+        "visible":true
+      }
+    ],
+    "tilesets":[
+      {
+        "tilesetUid": 1,
+        "tileSize": {
+          "height":96,
+          "width":96
+        },
+        "size": {
+          "height":2,
+          "width":2
+        },
+        "source": "assets/tilesets/TestTileSet.png"
+      }
+    ]
+  }   
+}
