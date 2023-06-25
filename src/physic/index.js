@@ -1,15 +1,19 @@
 const { Member } = require('@ellementul/united-events-environment')
 const { events: { time } } = require('@ellementul/uee-timeticker')
+const runEvent = require("../events/run-world")
+const stopEvent = require("../events/pause-world")
 
 const PAUSE = Symbol("Pause")
 const RUNNING = Symbol("Running")
-class PlayersManager extends Member {
+class Physic extends Member {
   constructor() {
     super()
 
     this._players = new Map
 
     this._state = PAUSE
+    this.onEvent(runEvent, () => this.run())
+    this.onEvent(stopEvent, () => this.stop())
     this.onEvent(time, () => this.step())
   }
 
@@ -19,15 +23,15 @@ class PlayersManager extends Member {
     this._state = RUNNING
   }
 
-  pause() {
+  stop() {
     this._state = PAUSE
-
   }
 
   step() {
     if(this._state != RUNNING) return
 
+    console.log("Tick!!!!!!!!!")
   }
 }
 
-module.exports = { PlayersManager }
+module.exports = { Physic }

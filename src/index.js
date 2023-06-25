@@ -6,6 +6,7 @@ const { Ticker } = require('@ellementul/uee-timeticker')
 const { GameSession } = require("./game-session")
 const { PlayersManager } = require("./players-manager")
 const { World } = require("./world")
+const { Physic } = require("./physic")
 const { Tiles } = require("./tiles")
 
 const membersList = {
@@ -25,8 +26,11 @@ const membersList = {
     {
       role: "World",
       memberConstructor: World
-    }
-    ,
+    },
+    {
+      role: "Physic",
+      memberConstructor: Physic
+    },
     {
       role: "Tiles",
       memberConstructor: Tiles
