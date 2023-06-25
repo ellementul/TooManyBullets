@@ -1,6 +1,8 @@
 const { Member } = require('@ellementul/united-events-environment')
 
 const loadTilesEvent = require("../events/load-tiles")
+const physicUpdateEvent = require("../events/update-physic")
+const updateEvent = require("../events/update-tiles")
 
 class Tiles extends Member {
   constructor() {
@@ -15,7 +17,14 @@ class Tiles extends Member {
   load({ state: tileMap }) {
     this.loadTiles(tileMap.tilesets)
     this.loadMap(tileMap)
-    console.log(this.map)
+    
+    this.onEvent(physicUpdateEvent, payload => this.physicUpdated(payload))
+  }
+
+  physicUpdated(payload) {
+    this.send(updateEvent, {
+      state: this.serialize()
+    })
   }
 
   loadTiles(tilesets) {
@@ -23,13 +32,13 @@ class Tiles extends Member {
       tilesetUid,
       tileSize,
       size,
-      source
+      texture
     }) => {
       const tileset = new Tileset({
         tilesetUid,
         tileSize,
         size,
-        source
+        texture
       })
       this.tilesets[tileset.uid] = tileset
     });
@@ -99,6 +108,23 @@ class Tiles extends Member {
 
     this.map[z][row][column] = tile
   }
+
+  serialize() {
+    const tileMap = this.map
+    const tilesets = []
+    const tiles = []
+    tileMap.forEach(layer => layer.forEach(row => row.forEach(tile => {
+      const { row, column, z } = tile.position
+      const { height, width, x, y } = tile.tilesetRect
+      tiles.push({
+        texture: tile.tileset.texture,
+        position: { row, column, z },
+        frame: { height, width, x, y }
+      })
+    })))
+
+    return { tiles }
+  }
 }
 
   
@@ -114,10 +140,11 @@ class Tileset {
       height: rows,
       width: columns
     },
-    source
+    texture
   }) {
     this.uid = tilesetUid
     this.tiles = []
+    this.texture = texture
 
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < columns; c++) {

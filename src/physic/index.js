@@ -2,6 +2,7 @@ const { Member } = require('@ellementul/united-events-environment')
 const { events: { time } } = require('@ellementul/uee-timeticker')
 const runEvent = require("../events/run-world")
 const stopEvent = require("../events/pause-world")
+const updateEvent = require("../events/update-physic")
 
 const PAUSE = Symbol("Pause")
 const RUNNING = Symbol("Running")
@@ -30,7 +31,7 @@ class Physic extends Member {
   step() {
     if(this._state != RUNNING) return
 
-    console.log("Tick!!!!!!!!!")
+    this.send(updateEvent)
   }
 }
 
