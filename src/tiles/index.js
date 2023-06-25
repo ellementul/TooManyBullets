@@ -7,6 +7,7 @@ class Tiles extends Member {
     super()
 
     this.tiles = [null]// TODO: Make zero for errors
+    this.tilesets = [null]// TODO: Make zero for errors
     this.map = []
     this.onEvent(loadTilesEvent, payload => this.load(payload))
   }
@@ -30,7 +31,7 @@ class Tiles extends Member {
         size,
         source
       })
-      this.tiles = this.tiles.concat(tileset.tiles)
+      this.tilesets[tileset.uid] = tileset
     });
   }
 
@@ -41,7 +42,8 @@ class Tiles extends Member {
   }
 
   loadLayer({
-    tiles,
+    tiles: tilesIds,
+    tilesets: tilesetsIds,
     position,
     size: {
       height: rows,
@@ -53,13 +55,15 @@ class Tiles extends Member {
     },
     zIndex
   }) {
-    if(tiles.length !== rows * columns)
+    if(tilesIds.length !== rows * columns)
       throw new TypeError("Inccorect number tiles in layer!")
 
+    const tiles = this.getTilesFromTilesets(tilesetsIds)
+    
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < columns; c++) {
-        const tile_id = tiles[r*columns + c]
-        const tile = this.tiles[tile_id]
+        const tileId = tilesIds[r*columns + c]
+        const tile = tiles[tileId]
 
         tile.position = {
           offsetLayer: position,
@@ -79,6 +83,10 @@ class Tiles extends Member {
         this.setTileOnMap(tile)
       }
     }
+  }
+
+  getTilesFromTilesets(tilesetsIds) {
+    return tilesetsIds.reduce((tiles, tilesetId) => tiles.concat(this.tilesets[tilesetId].tiles), this.tiles)
   }
 
   setTileOnMap(tile) {

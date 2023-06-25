@@ -1,11 +1,14 @@
 const { Member, events: { readyMembers } } = require('@ellementul/united-events-environment')
 const startSessionEvent = require("../events/start-session")
-const readyPLayersManagerEvent = require("../events/ready-players-manager")
+const readyPlayersManagerEvent = require("../events/ready-players-manager")
 const loadWorldEvent = require("../events/load-world")
 const readyWorldEvent = require("../events/ready-world")
+const runWorldEvent = require("../events/run-world")
+const stopWorldEvent = require("../events/pause-world")
 const updatePlayersCountEvent = require("../events/update-players-count")
 
 const START = Symbol("Start")
+const LOADING = Symbol("Loading")
 const PAUSE = Symbol("Pause")
 const RUNNING = Symbol("Running")
 
@@ -14,11 +17,16 @@ class GameSession extends Member {
     super()
 
     this.onEvent(readyMembers, () => this.startSession())
-    this.state = START
+    this._state = START
   }
 
   startSession() {
-    this.onEvent(readyPLayersManagerEvent, () => this.loadSession())
+    if(this._state == START)
+      this._state = LOADING
+    else
+      return
+
+    this.onEvent(readyPlayersManagerEvent, () => this.loadSession())
     this.send(startSessionEvent)
   }
 
@@ -28,6 +36,11 @@ class GameSession extends Member {
   }
 
   finishLoadingWorld(){
+    if(this._state == LOADING)
+      this._state = PAUSE
+    else
+      return
+
     this.onEvent(updatePlayersCountEvent, payload => this.isCountPlayers(payload))
   }
 
@@ -39,11 +52,17 @@ class GameSession extends Member {
   }
 
   run() {
-    this.state = RUNNING
+    if(this._state == PAUSE) {
+      this._state = RUNNING
+      this.send(runWorldEvent)
+    }
   }
 
   makePause() {
-    this.state = PAUSE
+    if(this._state == RUNNING) {
+      this._state = PAUSE
+      this.send(stopWorldEvent)
+    }
   }
 }
 

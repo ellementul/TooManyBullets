@@ -6,7 +6,7 @@
     "layers":[
       {
         "zIndex":0,
-        "tilesets":[1],
+        "tilesets": [1],
         "tiles":[1, 2, 3, 4],
         "position": {
           "x":0,
@@ -34,6 +34,12 @@
           "height":2,
           "width":2
         },
+        "texture": "texture-uuid" 
+      }
+    ],
+    "textures":[
+      {
+        "uuid": "texture-uuid",
         "source": "assets/tilesets/TestTileSet.png"
       }
     ]
