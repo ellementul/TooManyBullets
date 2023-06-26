@@ -128,7 +128,7 @@ class Tiles extends Member {
 
   serialize() {
     const tileMap = this.map
-    const layers = []
+    const layers = {}
 
     for (const layerName in tileMap) {
       const layer = tileMap[layerName]
@@ -143,11 +143,11 @@ class Tiles extends Member {
           frame: { height, width, x, y },
         })
       }))
-      layers.push({ 
+      layers[layerName] = { 
         tiles,
         size: layer.size,
         tileSize: layer.tileSize
-      })
+      }
     }
     return { layers }
   }
