@@ -10,7 +10,7 @@ class Tiles extends Member {
 
     this.tiles = [null]// TODO: Make zero for errors
     this.tilesets = [null]// TODO: Make zero for errors
-    this.map = []
+    this.map = {}
     this.onEvent(loadTilesEvent, payload => this.load(payload))
   }
 
@@ -89,7 +89,17 @@ class Tiles extends Member {
         if(tile.size.height * tile.size.width != 1)
           throw new TypeError("Right now tile has to be size 1x1!")
 
-        this.setTileOnMap(tile)
+        this.setTileOnMap(tile, {
+          name: "background",
+          size: {
+            height: rows,
+            width: columns
+          },
+          tileSize: {
+            height: tHeight,
+            width: tWidth
+          },
+        })
       }
     }
   }
@@ -98,32 +108,48 @@ class Tiles extends Member {
     return tilesetsIds.reduce((tiles, tilesetId) => tiles.concat(this.tilesets[tilesetId].tiles), this.tiles)
   }
 
-  setTileOnMap(tile) {
-    const { row, column, z } = tile.position
-    if(!Array.isArray(this.map[z]))
-      this.map[z] = []
+  setTileOnMap(tile, { name: layerName, size, tileSize }) {
+    const { row, column } = tile.position
+    if(!this.map[layerName])
+      this.map[layerName] = {
+        name: layerName,
+        tiles: [],
+        size,
+        tileSize
+      }
 
-    if(!Array.isArray(this.map[z][row]))
-      this.map[z][row] = []
+    const layer = this.map[layerName]
 
-    this.map[z][row][column] = tile
+    if(!Array.isArray(layer.tiles[row]))
+      layer.tiles[row] = []
+
+    layer.tiles[row][column] = tile
   }
 
   serialize() {
     const tileMap = this.map
-    const tilesets = []
-    const tiles = []
-    tileMap.forEach(layer => layer.forEach(row => row.forEach(tile => {
-      const { row, column, z } = tile.position
-      const { height, width, x, y } = tile.tilesetRect
-      tiles.push({
-        texture: tile.tileset.texture,
-        position: { row, column, z },
-        frame: { height, width, x, y }
-      })
-    })))
+    const layers = []
 
-    return { tiles }
+    for (const layerName in tileMap) {
+      const layer = tileMap[layerName]
+
+      const tiles = []
+      layer.tiles.forEach(row => row.forEach(tile => {
+        const { row, column } = tile.position
+        const { height, width, x, y } = tile.tilesetRect
+        tiles.push({
+          texture: tile.tileset.texture,
+          position: { row, column },
+          frame: { height, width, x, y },
+        })
+      }))
+      layers.push({ 
+        tiles,
+        size: layer.size,
+        tileSize: layer.tileSize
+      })
+    }
+    return { layers }
   }
 }
 
