@@ -51,6 +51,7 @@ class Tiles extends Member {
   }
 
   loadLayer({
+    name,
     tiles: tilesIds,
     tilesets: tilesetsIds,
     position,
@@ -72,7 +73,11 @@ class Tiles extends Member {
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < columns; c++) {
         const tileId = tilesIds[r*columns + c]
-        const tile = tiles[tileId]
+
+        if(tileId == 0)
+          continue
+
+        const tile = tiles[tileId].copy()
 
         tile.position = {
           offsetLayer: position,
@@ -90,7 +95,7 @@ class Tiles extends Member {
           throw new TypeError("Right now tile has to be size 1x1!")
 
         this.setTileOnMap(tile, {
-          name: "background",
+          name,
           size: {
             height: rows,
             width: columns
@@ -135,15 +140,16 @@ class Tiles extends Member {
 
       const tiles = []
       layer.tiles.forEach(row => row.forEach(tile => {
-        const { row, column } = tile.position
+        const { row, column, z } = tile.position
         const { height, width, x, y } = tile.tilesetRect
         tiles.push({
           texture: tile.tileset.texture,
-          position: { row, column },
+          position: { row, column, z },
           frame: { height, width, x, y },
         })
       }))
-      layers[layerName] = { 
+      layers[layerName] = {
+        name: layerName,
         tiles,
         size: layer.size,
         tileSize: layer.tileSize
@@ -204,6 +210,18 @@ class Tile {
       width: tWidth,
       x: column * tWidth,
       y: row * tHeight,
+    }
+  }
+
+  copy() {
+    return {
+      tileset: this.tileset,
+      tilesetRect: {
+        height: this.tilesetRect.height,
+        width: this.tilesetRect.width,
+        x: this.tilesetRect.x,
+        y: this.tilesetRect.y,
+      }
     }
   }
 }
