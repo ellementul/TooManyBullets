@@ -2,6 +2,7 @@ const { Member } = require('@ellementul/united-events-environment')
 const { events: { time } } = require('@ellementul/uee-timeticker')
 const startSessionEvent = require("../events/start-session")
 const readyEvent = require("../events/ready-players-manager")
+const connectedEvent = require("../events/connected-player")
 const updateCountEvent = require("../events/update-players-count")
 const pingEvent = require("../events/ping-players")
 const pongEvent = require("../events/pong-players")
@@ -35,6 +36,7 @@ class PlayersManager extends Member {
       pong: false
     })
 
+    this.send(connectedEvent, { state: playerUuid })
     this.send(updateCountEvent, { state: this._players.size })
   }
 

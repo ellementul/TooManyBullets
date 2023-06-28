@@ -8,6 +8,8 @@ const { PlayersManager } = require("./players-manager")
 const { World } = require("./world")
 const { Physic } = require("./physic")
 const { Tiles } = require("./tiles")
+const { Spawns } = require("./spawns")
+const { CharactersManager } = require("./characters")
 
 const membersList = {
   roles: [
@@ -34,6 +36,14 @@ const membersList = {
     {
       role: "Tiles",
       memberConstructor: Tiles
+    },
+    {
+      role: "Spawns",
+      memberConstructor: Spawns
+    },
+    {
+      role: "CharactersManager",
+      memberConstructor: CharactersManager
     }
   ]
 }

@@ -10,8 +10,6 @@ class Physic extends Member {
   constructor() {
     super()
 
-    this._players = new Map
-
     this._state = PAUSE
     this.onEvent(runEvent, () => this.run())
     this.onEvent(stopEvent, () => this.stop())

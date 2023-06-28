@@ -1,6 +1,7 @@
 const { Member } = require('@ellementul/united-events-environment')
 
 const loadTilesEvent = require("../events/load-tiles")
+const addSpwanEvent = require("../events/add-spawn")
 const physicUpdateEvent = require("../events/update-physic")
 const updateEvent = require("../events/update-tiles")
 
@@ -46,7 +47,12 @@ class Tiles extends Member {
 
   loadMap(tileMap) {
     tileMap.layers.forEach(layer => {
-      this.loadLayer(layer)
+
+      if(layer.name == "background")
+        this.loadLayer(layer)
+
+      if(layer.name == "walls")
+        this.loadLayer(layer)
     });
   }
 
@@ -63,12 +69,17 @@ class Tiles extends Member {
       height: tHeight,
       width: tWidth
     },
-    zIndex
+    spawns
   }) {
     if(tilesIds.length !== rows * columns)
       throw new TypeError("Inccorect number tiles in layer!")
 
     const tiles = this.getTilesFromTilesets(tilesetsIds)
+
+    const spawnsIds = []
+    if(Array.isArray(spawns)) {
+      spawnsIds.push(...spawns.map(spawn => spawn.number))
+    }
     
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < columns; c++) {
@@ -79,11 +90,13 @@ class Tiles extends Member {
 
         const tile = tiles[tileId].copy()
 
+        if(spawnsIds.includes(tileId))
+          tile.isSpawn = true
+
         tile.position = {
           offsetLayer: position,
           row: r,
-          column: c,
-          z: zIndex
+          column: c
         }
 
         tile.size = {
@@ -93,6 +106,7 @@ class Tiles extends Member {
 
         if(tile.size.height * tile.size.width != 1)
           throw new TypeError("Right now tile has to be size 1x1!")
+
 
         this.setTileOnMap(tile, {
           name,
@@ -129,6 +143,14 @@ class Tiles extends Member {
       layer.tiles[row] = []
 
     layer.tiles[row][column] = tile
+
+    if(tile.isSpawn)
+      this.send(addSpwanEvent, { state: {
+        position: {
+          x: (column * tileSize.width) + (tile.tilesetRect.width / 2),
+          y: (row * tileSize.height) + (tile.tilesetRect.height / 2),
+        }
+      }})
   }
 
   serialize() {
@@ -140,6 +162,9 @@ class Tiles extends Member {
 
       const tiles = []
       layer.tiles.forEach(row => row.forEach(tile => {
+        if(tile.isSpawn)
+          return
+
         const { row, column, z } = tile.position
         const { height, width, x, y } = tile.tilesetRect
         tiles.push({
