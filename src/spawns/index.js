@@ -2,6 +2,7 @@ const { Member, Types } = require('@ellementul/united-events-environment')
 
 const addEvent = require("../events/add-spawn")
 const spawnEvent = require("../events/spawn-character")
+const readyEvent = require("../events/ready-spawned")
 
 class Spawns extends Member {
   constructor() {
@@ -18,7 +19,17 @@ class Spawns extends Member {
   }
   
   spawnCharacter({ state: character }) {
-    console.log(character)
+    if(this._spawns.length == 0)
+      throw new Error("There are not spawns!")
+
+    const spawn = this._spawns[0]
+    const characterUuid = character.uuid
+    const position = {
+      x: spawn.position.x,
+      y: spawn.position.y
+    }
+
+    this.send(readyEvent, { characterUuid, position })
   }
 }
 

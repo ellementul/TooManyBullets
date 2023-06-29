@@ -147,8 +147,8 @@ class Tiles extends Member {
     if(tile.isSpawn)
       this.send(addSpwanEvent, { state: {
         position: {
-          x: (column * tileSize.width) + (tile.tilesetRect.width / 2),
-          y: (row * tileSize.height) + (tile.tilesetRect.height / 2),
+          x: column * tileSize.width,
+          y: row * tileSize.height,
         }
       }})
   }
