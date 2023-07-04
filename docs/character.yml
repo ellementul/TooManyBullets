@@ -1,0 +1,26 @@
+body: 256
+head: 128
+vertical_overlap_body_and_head: 24
+body_and_head:
+  heitgh: 360
+  width: 256
+coordinate_head:
+  x: 128
+  y: 64
+coordinate_body:
+  x: 128
+  y: 232
+
+hit_box:
+  heitgh: 340
+  width: 100
+  shift_x: 10
+  shift_y: 78
+
+coordinate_head_in_hit_box:
+  x: 50
+  y: 54
+coordinate_body_in_hit_box:
+  x: 50
+  y: 154
+

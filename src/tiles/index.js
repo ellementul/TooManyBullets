@@ -85,6 +85,9 @@ class Tiles extends Member {
       for (let c = 0; c < columns; c++) {
         const tileId = tilesIds[r*columns + c]
 
+        if(tileId >>> 29 != 0)
+          throw new TypeError("Tilr has flip or turn!")
+
         if(tileId == 0)
           continue
 

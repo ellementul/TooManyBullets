@@ -58,5 +58,5 @@ env = new UEE({
 
 env.run({
   isHost: true,
-  signalServerAddress: "ws://127.0.0.1:8080",
+  signalServerAddress: "ws://192.168.0.4:8080",
 })

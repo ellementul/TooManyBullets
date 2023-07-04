@@ -5,7 +5,10 @@ const connectedPlayerEvent = require("../events/connected-player")
 const spawnEvent = require("../events/spawn-character")
 const readyEvent = require("../events/ready-spawned")
 const createDynamicObject = require("../events/create-dynamic-object")
+const updateDynamicObject = require("../events/update-dynamic-object")
 const physicUpdateEvent = require("../events/update-physic")
+const updateEvent = require("../events/update-characters")
+const movingEvent = require("../events/moving-direct")
 
 class CharactersManager extends Member {
   constructor() {
@@ -18,6 +21,7 @@ class CharactersManager extends Member {
     this.onEvent(connectedPlayerEvent, payload => this.addNewCharacter(payload))
     this.onEvent(readyEvent, payload => this.spawnCharacter(payload))
     this.onEvent(physicUpdateEvent, payload => this.physicUpdate(payload))
+    this.onEvent(movingEvent, payload => this.moveCharacter(payload))
   }
 
   addNewCharacter({ state: playerUid }) {
@@ -37,39 +41,91 @@ class CharactersManager extends Member {
     })
   }
 
-  physicUpdate({ state }) {
+  moveCharacter({ state: { playerUuid, direct } }) {
+    const characterUuid = this._players.get(playerUuid)
+    const character = this._characters.get(characterUuid)
+
+    character.changeDirection(direct)
+
+    this.send(updateDynamicObject, {
+      state: character.serialize()
+    })
+  }
+
+  physicUpdate({ state: positions }) {
+    const characters = []
+    
     for (const [uuid, character] of this._characters) {
-      if(character.isSpawned())
-        console.log(uuid, character)
+      if(character.isSpawned()) {
+        character.position = positions[uuid]
+        characters.push(character.serialize())
+      }
     }
+
+    this.send(updateEvent, {
+      state: characters
+    })
   }
 }
 
 const CREATED = "Created"
-const SPAWNED = "Spawned"
+const STAND = "Stay"
+const WALK = "Walk"
+
 class Character {
   constructor() {
     this.uuid = genUuid()
+    this.speed = 0
     this.velocity = { x: 0, y: 0 }
     this.box = {
-      width: 64,
-      height: 96
+      width: 100,
+      height: 340
     }
     this._state = CREATED
   }
 
   spawn({ position: { x, y } }) {
-    if(this._state !== CREATED)
+    if(this.isSpawned())
       return
   
-    this._state = SPAWNED
+    this.changeState(STAND)
+    this.speed = 500
     this.position = { x, y }
 
     return this
   }
 
+  changeDirection(direct) {
+    if(!this.isSpawned())
+      return
+
+    this.velocity = { 
+      x: direct.x * this.speed, 
+      y: direct.y * this.speed
+    }
+
+    if(this.velocity.x === 0 && this.velocity.y === 0)
+      this.stop()
+    else
+      this.walking()
+  }
+
+  walking() {
+    if(this._state !== WALK)
+      this.changeState(WALK)
+  }
+
+  stop() {
+    if(this._state !== STAND)
+      this.changeState(STAND)
+  }
+
+  changeState(state) {
+    this._state = state
+  }
+
   isSpawned() {
-    return this._state === SPAWNED
+    return this._state === STAND || this._state === WALK
   }
 
   serialize() {
@@ -79,7 +135,11 @@ class Character {
       uuid: this.uuid,
       shape: "Box",
       box: { width, height },
-      position: { x, y }
+      position: { x, y },
+      velocity: {
+        x: this.velocity.x,
+        y: this.velocity.y
+      }
     }
   }
 }
