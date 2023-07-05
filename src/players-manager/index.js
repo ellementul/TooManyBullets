@@ -8,7 +8,7 @@ const pingEvent = require("../events/ping-players")
 const pongEvent = require("../events/pong-players")
 
 let timeout = 0
-const MSTIMELIMIT = 500
+const MSTIMELIMIT = 2000
 class PlayersManager extends Member {
   constructor() {
     super()

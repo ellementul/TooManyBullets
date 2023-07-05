@@ -36,6 +36,8 @@ class CharactersManager extends Member {
 
   spawnCharacter({ characterUuid, position }) {
     const characterShape = this._characters.get(characterUuid).spawn({ position }).serialize()
+
+    console.log(characterUuid)
     this.send(createDynamicObject, {
       state: characterShape
     })

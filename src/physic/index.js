@@ -36,8 +36,6 @@ class Physic extends Member {
   }
 
   createDynamic({ state: newObject }) {
-    this.step()
-
     this._dynamicObjects.set(newObject.uuid, {
       position: {
         x: newObject.position.x,
@@ -48,13 +46,9 @@ class Physic extends Member {
         y: newObject.velocity.y
       }
     })
-
-    
   }
 
   updateDynamic({ state: object }) {
-    this.step()
-
     const physicObject = this._dynamicObjects.get(object.uuid)
     physicObject.velocity = {
       x: object.velocity.x,
