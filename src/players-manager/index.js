@@ -1,5 +1,4 @@
-const { Member } = require('@ellementul/united-events-environment')
-const { events: { time } } = require('@ellementul/uee-timeticker')
+const { Member, events: { time } } = require('@ellementul/united-events-environment')
 const startSessionEvent = require("../events/start-session")
 const readyEvent = require("../events/ready-players-manager")
 const connectedEvent = require("../events/connected-player")
