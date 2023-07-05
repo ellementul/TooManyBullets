@@ -1,5 +1,4 @@
-const { Member } = require('@ellementul/united-events-environment')
-const { events: { time } } = require('@ellementul/uee-timeticker')
+const { Member, events: { time } } = require('@ellementul/united-events-environment')
 const runEvent = require("../events/run-world")
 const stopEvent = require("../events/pause-world")
 const createDynamicObject = require("../events/create-dynamic-object")
