@@ -1,8 +1,8 @@
 const { Member, Types } = require('@ellementul/united-events-environment')
 
-const addEvent = require("../events/add-spawn")
-const spawnEvent = require("../events/spawn-character")
-const readyEvent = require("../events/ready-spawned")
+const addEvent = require("../events/objects/add-spawn")
+const spawnEvent = require("../events/objects/spawn-character")
+const readyEvent = require("../events/objects/ready-spawned")
 
 class Spawns extends Member {
   constructor() {

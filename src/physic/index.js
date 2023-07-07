@@ -1,9 +1,9 @@
 const { Member, events: { time } } = require('@ellementul/united-events-environment')
 const runEvent = require("../events/run-world")
 const stopEvent = require("../events/pause-world")
-const createDynamicObject = require("../events/create-dynamic-object")
-const updateDynamicObject = require("../events/update-dynamic-object")
-const updateEvent = require("../events/update-physic")
+const createDynamicObject = require("../events/objects/create-dynamic-object")
+const updateDynamicObject = require("../events/objects/update-dynamic-object")
+const updateEvent = require("../events/objects/update-physic")
 
 const PAUSE = Symbol("Pause")
 const RUNNING = Symbol("Running")
