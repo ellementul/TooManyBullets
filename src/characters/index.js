@@ -84,6 +84,8 @@ class Character {
       height: 340
     }
     this._state = CREATED
+
+    this._groupCollision = "Characters"
   }
 
   spawn({ position: { x, y } }) {
@@ -141,7 +143,8 @@ class Character {
       velocity: {
         x: this.velocity.x,
         y: this.velocity.y
-      }
+      },
+      groupCollision: this._groupCollision
     }
   }
 }

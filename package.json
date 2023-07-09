@@ -33,6 +33,7 @@
   "dependencies": {
     "@ellementul/uee-core": "^1.2.2",
     "@ellementul/uee-ws-browser-transport": "^0.5.1",
-    "@ellementul/united-events-environment": "^1.3.0"
+    "@ellementul/united-events-environment": "^1.3.0",
+    "detect-collisions": "^9.1.1"
   }
 }

@@ -1,4 +1,6 @@
 const { Member, events: { time } } = require('@ellementul/united-events-environment')
+const { System } = require("detect-collisions");
+
 const runEvent = require("../events/run-world")
 const stopEvent = require("../events/pause-world")
 const createDynamicObject = require("../events/objects/create-dynamic-object")
@@ -15,6 +17,8 @@ class Physic extends Member {
     this.timer = new Timer
 
     this._dynamicObjects = new Map
+
+    this.collisionSystem = new System
     
     this.onEvent(runEvent, () => this.run())
     this.onEvent(stopEvent, () => this.stop())
@@ -35,16 +39,16 @@ class Physic extends Member {
   }
 
   createDynamic({ state: newObject }) {
-    this._dynamicObjects.set(newObject.uuid, {
-      position: {
-        x: newObject.position.x,
-        y: newObject.position.y
-      },
-      velocity: {
-        x: newObject.velocity.x,
-        y: newObject.velocity.y
-      }
-    })
+    if(newObject.shape === "Box")
+      this.createDynamicBox(newObject)
+    
+  }
+
+  createDynamicBox({ uuid, position, box: { width, height }, velocity }) {
+    const box = this.collisionSystem.createBox(position, width, height)
+    box.velocity = velocity
+    
+    this._dynamicObjects.set(uuid, box)
   }
 
   updateDynamic({ state: object }) {
@@ -66,10 +70,10 @@ class Physic extends Member {
   sendUpdated() {
     const objectsPositions = {}
 
-    for (const [uuid, { position }] of this._dynamicObjects) {
+    for (const [uuid, object] of this._dynamicObjects) {
       objectsPositions[uuid] = {
-        x: position.x,
-        y: position.y
+        x: object.x,
+        y: object.y
       }
     }
 
@@ -82,9 +86,44 @@ class Physic extends Member {
     }
   }
 
-  updatePosition({ position, velocity }) {
-    position.x += velocity.x * this.timer.delta
-    position.y += velocity.y * this.timer.delta
+  updatePosition(object) {
+    object.setPosition(
+      object.x + object.velocity.x * this.timer.delta,
+      object.y + object.velocity.y * this.timer.delta
+    )
+  }
+}
+
+const NONE = "None"
+const TRRIGER = "Overlap"
+const REBOUND = "Rebound"
+
+const WALLS = "Walls"
+const CHARACTERS = "Characters"
+
+class Collision {
+  constructor() {
+    const walls = new Map([
+      [WALLS, TRRIGER]
+      [CHARACTERS, REBOUND]
+    ])
+    const characters = new Map([
+      [WALLS, REBOUND],
+      [CHARACTERS, NONE]
+    ])
+
+    this._collisionsTypes = new Map([
+      [WALLS, walls]
+      [CHARACTERS, characters]
+    ]) 
+  }
+
+  isTrigger(typeA, typeB) {
+    return this._collisionsTypes.get(typeA).get(typeB) === TRRIGER
+  }
+
+  isRebound(typeA, typeB) {
+    return this._collisionsTypes.get(typeA).get(typeB) === REBOUND
   }
 }
 

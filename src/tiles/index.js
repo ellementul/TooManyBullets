@@ -225,7 +225,7 @@ class Tiles extends Member {
 
   setWallOnMap(tile, { layerUuid, type, size, tileSize }) {
 
-    const { row, column } = tile.position
+    const { uuid, position: { row, column } } = tile
 
     if(tile.isSpawn)
       this.send(addSpwanEvent, { state: {
@@ -236,7 +236,8 @@ class Tiles extends Member {
       }})
     else
       this.send(createWallsEvent, { state: {
-        postiion: { row, column }
+        uuid,
+        position: { row, column }
       }})
 
     
