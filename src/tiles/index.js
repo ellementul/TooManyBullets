@@ -237,7 +237,9 @@ class Tiles extends Member {
     else
       this.send(createWallsEvent, { state: {
         uuid,
-        position: { row, column }
+        position: { row, column },
+        size,
+        tileSize
       }})
 
     

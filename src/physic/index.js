@@ -5,6 +5,7 @@ const runEvent = require("../events/run-world")
 const stopEvent = require("../events/pause-world")
 const createDynamicObject = require("../events/objects/create-dynamic-object")
 const updateDynamicObject = require("../events/objects/update-dynamic-object")
+const createWallsEvent = require("../events/objects/create-walls-object")
 const updateEvent = require("../events/objects/update-physic")
 
 const PAUSE = Symbol("Pause")
@@ -17,13 +18,16 @@ class Physic extends Member {
     this.timer = new Timer
 
     this._dynamicObjects = new Map
+    this._staticObjects = new Map
 
+    this.groupsCollisions = new Collision
     this.collisionSystem = new System
     
     this.onEvent(runEvent, () => this.run())
     this.onEvent(stopEvent, () => this.stop())
     this.onEvent(createDynamicObject, payload => this.createDynamic(payload))
     this.onEvent(updateDynamicObject, payload => this.updateDynamic(payload))
+    this.onEvent(createWallsEvent, payload => this.createWall(payload))
     this.onEvent(time, () => this.step())
   }
 
@@ -44,9 +48,11 @@ class Physic extends Member {
     
   }
 
-  createDynamicBox({ uuid, position, box: { width, height }, velocity }) {
-    const box = this.collisionSystem.createBox(position, width, height)
+  createDynamicBox({ uuid, position, box: { width, height }, velocity, groupCollision }) {
+    const options = { isStatic: false }
+    const box = this.collisionSystem.createBox(position, width, height, options)
     box.velocity = velocity
+    box.groupCollision = groupCollision
     
     this._dynamicObjects.set(uuid, box)
   }
@@ -59,12 +65,47 @@ class Physic extends Member {
     }
   }
 
+  createWall({ state: {
+    uuid,
+    position: { row, column },
+    tileSize
+  }}) {
+    const position = {
+      x: column * tileSize.width,
+      y: row * tileSize.height,
+    }
+    const width = tileSize.width
+    const height = tileSize.height
+    const options = { isStatic: true }
+
+    const wall = this.collisionSystem.createBox(position, width, height, options)
+    wall.groupCollision = WALLS
+
+    this._staticObjects.set(uuid, wall)
+  }
+
   step() {
     if(this._state != RUNNING) return
     this.timer.step()
 
     this.updatePositions()
+    this.checkCollisions()
     this.sendUpdated()
+  }
+
+  checkCollisions() {
+    this.collisionSystem.checkAll(({ a, b, overlapV }) => {
+      if(this.groupsCollisions.isRebound(a.groupCollision, b.groupCollision))
+        this.resolveCollision({ a, b, overlapV })
+    })
+  }
+
+  resolveCollision({ a, b, overlapV }) {
+    if(!a.isStatic)
+      a.setPosition(
+        a.x - overlapV.x,
+        a.y - overlapV.y
+      )
   }
 
   sendUpdated() {
@@ -104,7 +145,7 @@ const CHARACTERS = "Characters"
 class Collision {
   constructor() {
     const walls = new Map([
-      [WALLS, TRRIGER]
+      [WALLS, TRRIGER],
       [CHARACTERS, REBOUND]
     ])
     const characters = new Map([
@@ -113,7 +154,7 @@ class Collision {
     ])
 
     this._collisionsTypes = new Map([
-      [WALLS, walls]
+      [WALLS, walls],
       [CHARACTERS, characters]
     ]) 
   }
