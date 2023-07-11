@@ -9,6 +9,7 @@ const { Physic } = require("./physic")
 const { Tiles } = require("./tiles")
 const { Spawns } = require("./spawns")
 const { CharactersManager } = require("./characters")
+const { BulletsManager } = require("./bullets")
 
 const membersList = {
   roles: [
@@ -18,7 +19,8 @@ const membersList = {
     Physic,
     Tiles,
     Spawns,
-    CharactersManager
+    CharactersManager,
+    BulletsManager
   ]
 }
 

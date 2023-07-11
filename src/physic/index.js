@@ -5,8 +5,10 @@ const runEvent = require("../events/run-world")
 const stopEvent = require("../events/pause-world")
 const createDynamicObject = require("../events/objects/create-dynamic-object")
 const updateDynamicObject = require("../events/objects/update-dynamic-object")
+const removeDynamicObject = require("../events/objects/remove-dynamic-object")
 const createWallsEvent = require("../events/objects/create-walls-object")
 const updateEvent = require("../events/objects/update-physic")
+const outLimitObjectEvent = require("../events/objects/out-limit-world")
 
 const PAUSE = Symbol("Pause")
 const RUNNING = Symbol("Running")
@@ -22,11 +24,14 @@ class Physic extends Member {
 
     this.groupsCollisions = new Collision
     this.collisionSystem = new System
+
+    this.limit = 360*16
     
     this.onEvent(runEvent, () => this.run())
     this.onEvent(stopEvent, () => this.stop())
     this.onEvent(createDynamicObject, payload => this.createDynamic(payload))
     this.onEvent(updateDynamicObject, payload => this.updateDynamic(payload))
+    this.onEvent(removeDynamicObject, payload => this.removeDynamic(payload))
     this.onEvent(createWallsEvent, payload => this.createWall(payload))
     this.onEvent(time, () => this.step())
   }
@@ -63,6 +68,11 @@ class Physic extends Member {
       x: object.velocity.x,
       y: object.velocity.y
     }
+    physicObject.isOut = false
+  }
+
+  removeDynamic({ state: uuid }) {
+    this._dynamicObjects.delete(uuid)
   }
 
   createWall({ state: {
@@ -123,8 +133,21 @@ class Physic extends Member {
 
   updatePositions() {
     for (const [uuid, object] of this._dynamicObjects) {
+      if(object.isOut) continue
+
       this.updatePosition(object)
+      const { x , y } = object
+
+      if(this.checkLimitOfPosition({ x , y })) {
+        object.isOut = true
+        this.send(outLimitObjectEvent, { state: uuid })
+      }
     }
+  }
+
+  checkLimitOfPosition({ x , y }) {
+    const maxCoord = Math.max(Math.abs(x), Math.abs(y))
+    return maxCoord > this.limit
   }
 
   updatePosition(object) {
@@ -141,6 +164,7 @@ const REBOUND = "Rebound"
 
 const WALLS = "Walls"
 const CHARACTERS = "Characters"
+const BULLETS = "Bullets"
 
 class Collision {
   constructor() {
@@ -152,10 +176,16 @@ class Collision {
       [WALLS, REBOUND],
       [CHARACTERS, NONE]
     ])
+    const bullets = new Map([
+      [WALLS, TRRIGER],
+      [CHARACTERS, NONE],
+      [BULLETS, NONE]
+    ]) 
 
     this._collisionsTypes = new Map([
       [WALLS, walls],
-      [CHARACTERS, characters]
+      [CHARACTERS, characters],
+      [BULLETS, bullets]
     ]) 
   }
 

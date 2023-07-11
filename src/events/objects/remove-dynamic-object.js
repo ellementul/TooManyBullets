@@ -6,12 +6,8 @@ const BULLETS = Types.Const.Def("Bullets")
 const type = Types.Object.Def({
   system: "Physic",
   entity: "Object",
-  action: "Create",
-  state: Types.Object.Def({
-    uuid: Types.UUID.Def(),
-    shape: "Box",
-    groupCollision: Types.Any.Def([CHARACTERS, BULLETS])
-  }, true)
+  action: "Remove",
+  state: Types.UUID.Def()
 })
 
 module.exports = EventFactory(type)

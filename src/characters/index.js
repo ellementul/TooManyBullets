@@ -9,6 +9,8 @@ const updateDynamicObject = require("../events/objects/update-dynamic-object")
 const physicUpdateEvent = require("../events/objects/update-physic")
 const updateEvent = require("../events/objects/update-characters")
 const movingEvent = require("../events/moving-direct")
+const shotActionEvent = require("../events/shot-action")
+const spwanBulletEvent = require("../events/objects/spawn-bullet")
 
 class CharactersManager extends Member {
   constructor() {
@@ -22,6 +24,7 @@ class CharactersManager extends Member {
     this.onEvent(readyEvent, payload => this.spawnCharacter(payload))
     this.onEvent(physicUpdateEvent, payload => this.physicUpdate(payload))
     this.onEvent(movingEvent, payload => this.moveCharacter(payload))
+    this.onEvent(shotActionEvent, payload => this.shotCharacter(payload))
   }
 
   addNewCharacter({ state: playerUid }) {
@@ -51,6 +54,18 @@ class CharactersManager extends Member {
 
     this.send(updateDynamicObject, {
       state: character.serialize()
+    })
+  }
+
+  shotCharacter({ state: { playerUuid, direct } }) {
+    const characterUuid = this._players.get(playerUuid)
+    const character = this._characters.get(characterUuid)
+
+    this.send(spwanBulletEvent, {
+      state: {
+        direct,
+        position: character.position
+      }
     })
   }
 
