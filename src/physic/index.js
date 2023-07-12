@@ -8,6 +8,7 @@ const updateDynamicObject = require("../events/objects/update-dynamic-object")
 const removeDynamicObject = require("../events/objects/remove-dynamic-object")
 const createWallsEvent = require("../events/objects/create-walls-object")
 const updateEvent = require("../events/objects/update-physic")
+const overlapEvent = require("../events/objects/overlap-objects")
 const outLimitObjectEvent = require("../events/objects/out-limit-world")
 
 const PAUSE = Symbol("Pause")
@@ -56,6 +57,7 @@ class Physic extends Member {
   createDynamicBox({ uuid, position, box: { width, height }, velocity, groupCollision }) {
     const options = { isStatic: false }
     const box = this.collisionSystem.createBox(position, width, height, options)
+    box.uuid = uuid
     box.velocity = velocity
     box.groupCollision = groupCollision
     
@@ -89,6 +91,7 @@ class Physic extends Member {
     const options = { isStatic: true }
 
     const wall = this.collisionSystem.createBox(position, width, height, options)
+    wall.uuid = uuid
     wall.groupCollision = WALLS
 
     this._staticObjects.set(uuid, wall)
@@ -107,6 +110,9 @@ class Physic extends Member {
     this.collisionSystem.checkAll(({ a, b, overlapV }) => {
       if(this.groupsCollisions.isRebound(a.groupCollision, b.groupCollision))
         this.resolveCollision({ a, b, overlapV })
+
+      if(this.groupsCollisions.isTrigger(a.groupCollision, b.groupCollision))
+        this.send(overlapEvent, { state: [a.uuid, b.uuid] })
     })
   }
 
@@ -170,11 +176,13 @@ class Collision {
   constructor() {
     const walls = new Map([
       [WALLS, TRRIGER],
-      [CHARACTERS, REBOUND]
+      [CHARACTERS, REBOUND],
+      [BULLETS, TRRIGER]
     ])
     const characters = new Map([
       [WALLS, REBOUND],
-      [CHARACTERS, NONE]
+      [CHARACTERS, NONE],
+      [BULLETS, NONE]
     ])
     const bullets = new Map([
       [WALLS, TRRIGER],

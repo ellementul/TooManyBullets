@@ -5,6 +5,8 @@ const loadTilesEvent = require("../events/load-tiles")
 const addSpwanEvent = require("../events/objects/add-spawn")
 const createWallsEvent = require("../events/objects/create-walls-object")
 const physicUpdateEvent = require("../events/objects/update-physic")
+const createHPEvent = require("../events/objects/create-hp")
+const deleteHPEvent = require("../events/objects/remove-hp")
 const updateEvent = require("../events/objects/update-tiles")
 
 class Tiles extends Member {
@@ -227,20 +229,23 @@ class Tiles extends Member {
 
     const { uuid, position: { row, column } } = tile
 
-    if(tile.isSpawn)
+    if(tile.isSpawn) {
       this.send(addSpwanEvent, { state: {
         position: {
           x: column * tileSize.width,
           y: row * tileSize.height,
         }
       }})
-    else
+    }
+    else {
+      this.send(createHPEvent, { state: uuid })
       this.send(createWallsEvent, { state: {
         uuid,
         position: { row, column },
         size,
         tileSize
       }})
+    }
 
     
     if(!this.map[layerUuid])

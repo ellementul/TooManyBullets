@@ -10,6 +10,7 @@ const { Tiles } = require("./tiles")
 const { Spawns } = require("./spawns")
 const { CharactersManager } = require("./characters")
 const { BulletsManager } = require("./bullets")
+const { HPDamage } = require("./hp-damage")
 
 const membersList = {
   roles: [
@@ -20,7 +21,8 @@ const membersList = {
     Tiles,
     Spawns,
     CharactersManager,
-    BulletsManager
+    BulletsManager,
+    HPDamage
   ]
 }
 

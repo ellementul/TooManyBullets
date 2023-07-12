@@ -4,9 +4,12 @@ const genUuid = Types.UUID.Def().rand
 const spwanEvent = require("../events/objects/spawn-bullet")
 const createDynamicObject = require("../events/objects/create-dynamic-object")
 const removeDynamicObject = require("../events/objects/remove-dynamic-object")
+const createHPEvent = require("../events/objects/create-hp")
+const deleteHPEvent = require("../events/objects/remove-hp")
 const physicUpdateEvent = require("../events/objects/update-physic")
 const updateEvent = require("../events/objects/update-bullets")
 const outLimitObjectEvent = require("../events/objects/out-limit-world")
+const destroyEvent = require("../events/objects/destroyed-object")
 
 
 class BulletsManager extends Member {
@@ -18,12 +21,14 @@ class BulletsManager extends Member {
     this.onEvent(spwanEvent, payload => this.addNewBullet(payload))
     this.onEvent(physicUpdateEvent, payload => this.physicUpdate(payload))
     this.onEvent(outLimitObjectEvent, payload => this.outLimit(payload))
+    this.onEvent(destroyEvent, payload => this.destroy(payload))
   }
 
   addNewBullet({ state: { direct, position } }) {
     const bullet = new Bullet({ direct, position })
     this._bullets.set(bullet.uuid, bullet)
 
+    this.send(createHPEvent, { state: bullet.uuid })
     this.send(createDynamicObject, {
       state: bullet.serialize()
     })
@@ -43,7 +48,18 @@ class BulletsManager extends Member {
   }
 
   outLimit({ state: uuid }) {
+    if(this._bullets.has(uuid))
+      this.delete(uuid)
+  }
+
+  destroy({ state: uuid }) {
+    if(this._bullets.has(uuid))
+      this.delete(uuid)
+  }
+
+  delete(uuid) {
     this._bullets.delete(uuid)
+    this.send(deleteHPEvent, { state: uuid })
     this.send(removeDynamicObject, { state: uuid })
   }
 }
