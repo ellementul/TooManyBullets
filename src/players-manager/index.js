@@ -1,7 +1,9 @@
 const { Member, events: { time } } = require('@ellementul/united-events-environment')
+
 const startSessionEvent = require("../events/start-session")
 const readyEvent = require("../events/ready-players-manager")
 const connectedEvent = require("../events/players/connected-player")
+const disconnectedEvent = require("../events/players/disconnected-player")
 const updateCountEvent = require("../events/players/update-players-count")
 const pingEvent = require("../events/players/ping-players")
 const pongEvent = require("../events/players/pong-players")
@@ -82,6 +84,7 @@ class PlayersManager extends Member {
   diconnectedPlayers(playerUuid) {
     this._players.delete(playerUuid)
     this.send(updateCountEvent, { state: this._players.size })
+    this.send(disconnectedEvent, { state: playerUuid })
   }
 }
 

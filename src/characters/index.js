@@ -2,10 +2,12 @@ const { Member, Types } = require('@ellementul/united-events-environment')
 const genUuid = Types.UUID.Def().rand
 
 const connectedPlayerEvent = require("../events/players/connected-player")
+const disconnectedEvent = require("../events/players/disconnected-player")
 const spawnEvent = require("../events/objects/spawn-character")
 const readyEvent = require("../events/objects/ready-spawned")
 const createDynamicObject = require("../events/objects/create-dynamic-object")
 const updateDynamicObject = require("../events/objects/update-dynamic-object")
+const removeDynamicObject = require("../events/objects/remove-dynamic-object")
 const physicUpdateEvent = require("../events/objects/update-physic")
 const updateEvent = require("../events/objects/update-characters")
 const movingEvent = require("../events/players/moving-direct")
@@ -21,6 +23,7 @@ class CharactersManager extends Member {
 
     
     this.onEvent(connectedPlayerEvent, payload => this.addNewCharacter(payload))
+    this.onEvent(disconnectedEvent, payload => this.deleteCharactersByPlayer(payload))
     this.onEvent(readyEvent, payload => this.spawnCharacter(payload))
     this.onEvent(physicUpdateEvent, payload => this.physicUpdate(payload))
     this.onEvent(movingEvent, payload => this.moveCharacter(payload))
@@ -37,10 +40,21 @@ class CharactersManager extends Member {
     this.send(spawnEvent, { state: { uuid: newCharacter.uuid } })
   }
 
+  deleteCharactersByPlayer({ state: playerUid }) {
+    const characterUuid = this._players.get(playerUid)
+    this._players.delete(playerUid)
+    this.deleteCharacter(characterUuid)
+  }
+
+  deleteCharacter(uuid) {
+    this._characters.delete(uuid)
+    this.send(removeDynamicObject, { state: uuid })
+  }
+
   spawnCharacter({ characterUuid, position }) {
     const characterShape = this._characters.get(characterUuid).spawn({ position }).serialize()
 
-    console.log(characterUuid)
+    console.log("Created", characterUuid)
     this.send(createDynamicObject, {
       state: characterShape
     })
