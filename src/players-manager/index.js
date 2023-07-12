@@ -1,10 +1,10 @@
 const { Member, events: { time } } = require('@ellementul/united-events-environment')
 const startSessionEvent = require("../events/start-session")
 const readyEvent = require("../events/ready-players-manager")
-const connectedEvent = require("../events/connected-player")
-const updateCountEvent = require("../events/update-players-count")
-const pingEvent = require("../events/ping-players")
-const pongEvent = require("../events/pong-players")
+const connectedEvent = require("../events/players/connected-player")
+const updateCountEvent = require("../events/players/update-players-count")
+const pingEvent = require("../events/players/ping-players")
+const pongEvent = require("../events/players/pong-players")
 
 let timeout = 0
 const MSTIMELIMIT = 2000

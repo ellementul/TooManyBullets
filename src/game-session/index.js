@@ -5,7 +5,7 @@ const loadWorldEvent = require("../events/load-world")
 const readyWorldEvent = require("../events/ready-world")
 const runWorldEvent = require("../events/run-world")
 const stopWorldEvent = require("../events/pause-world")
-const updatePlayersCountEvent = require("../events/update-players-count")
+const updatePlayersCountEvent = require("../events/players/update-players-count")
 
 const START = Symbol("Start")
 const LOADING = Symbol("Loading")

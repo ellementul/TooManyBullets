@@ -1,15 +1,15 @@
 const { Member, Types } = require('@ellementul/united-events-environment')
 const genUuid = Types.UUID.Def().rand
 
-const connectedPlayerEvent = require("../events/connected-player")
+const connectedPlayerEvent = require("../events/players/connected-player")
 const spawnEvent = require("../events/objects/spawn-character")
 const readyEvent = require("../events/objects/ready-spawned")
 const createDynamicObject = require("../events/objects/create-dynamic-object")
 const updateDynamicObject = require("../events/objects/update-dynamic-object")
 const physicUpdateEvent = require("../events/objects/update-physic")
 const updateEvent = require("../events/objects/update-characters")
-const movingEvent = require("../events/moving-direct")
-const shotActionEvent = require("../events/shot-action")
+const movingEvent = require("../events/players/moving-direct")
+const shotActionEvent = require("../events/players/shot-action")
 const spwanBulletEvent = require("../events/objects/spawn-bullet")
 
 class CharactersManager extends Member {
