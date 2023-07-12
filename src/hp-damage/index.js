@@ -16,11 +16,11 @@ class HPDamage extends Member {
     this.onEvent(overlapEvent, payload => this.applyDamage(payload))
   }
 
-  create({ state:  uuid  }) {
+  create({ state:  { uuid, hp, damage, isApplyDamage }  }) {
     const newObject = new HP({
-      hp: 10,
-      damage: 5,
-      isApplyDamage: true
+      hp,
+      damage,
+      isApplyDamage
     })
     this.objects.set(uuid, newObject)
   }
@@ -34,7 +34,9 @@ class HPDamage extends Member {
       return
 
     const firstObj = this.objects.get(uuids[0])
-    const secondObj = this.objects.get(uuids[0])
+    const secondObj = this.objects.get(uuids[1])
+
+    console.log(firstObj, secondObj)
 
     if(firstObj.isDestroyed || secondObj.isDestroyed)
       return

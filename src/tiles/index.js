@@ -242,7 +242,12 @@ class Tiles extends Member {
       }})
     }
     else {
-      this.send(createHPEvent, { state: uuid })
+      this.send(createHPEvent,  { state:  { 
+        uuid, 
+        hp: 50, 
+        damage: 50, 
+        isApplyDamage: true
+      }})
       this.send(createWallsEvent, { state: {
         uuid,
         position: { row, column },

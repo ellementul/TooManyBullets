@@ -28,7 +28,12 @@ class BulletsManager extends Member {
     const bullet = new Bullet({ direct, position })
     this._bullets.set(bullet.uuid, bullet)
 
-    this.send(createHPEvent, { state: bullet.uuid })
+    this.send(createHPEvent,  { state:  { 
+      uuid: bullet.uuid,
+      hp: 5, 
+      damage: 10, 
+      isApplyDamage: true
+    }})
     this.send(createDynamicObject, {
       state: bullet.serialize()
     })

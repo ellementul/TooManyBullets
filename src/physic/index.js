@@ -194,11 +194,11 @@ class Collision {
     const characters = new Map([
       [WALLS, REBOUND],
       [CHARACTERS, NONE],
-      [BULLETS, NONE]
+      [BULLETS, TRRIGER]
     ])
     const bullets = new Map([
       [WALLS, TRRIGER],
-      [CHARACTERS, NONE],
+      [CHARACTERS, TRRIGER],
       [BULLETS, NONE]
     ]) 
 
