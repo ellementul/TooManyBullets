@@ -7,6 +7,7 @@ const createDynamicObject = require("../events/objects/create-dynamic-object")
 const updateDynamicObject = require("../events/objects/update-dynamic-object")
 const removeDynamicObject = require("../events/objects/remove-dynamic-object")
 const createWallsEvent = require("../events/objects/create-walls-object")
+const removeWallsEvent = require("../events/objects/remove-walls-object")
 const updateEvent = require("../events/objects/update-physic")
 const overlapEvent = require("../events/objects/overlap-objects")
 const outLimitObjectEvent = require("../events/objects/out-limit-world")
@@ -34,6 +35,7 @@ class Physic extends Member {
     this.onEvent(updateDynamicObject, payload => this.updateDynamic(payload))
     this.onEvent(removeDynamicObject, payload => this.removeDynamic(payload))
     this.onEvent(createWallsEvent, payload => this.createWall(payload))
+    this.onEvent(removeWallsEvent, payload => this.deleteWall(payload))
     this.onEvent(time, () => this.step())
   }
 
@@ -74,7 +76,10 @@ class Physic extends Member {
   }
 
   removeDynamic({ state: uuid }) {
-    this._dynamicObjects.delete(uuid)
+    if(this._dynamicObjects.has(uuid)) {
+      this.collisionSystem.remove(this._dynamicObjects.get(uuid))
+      this._dynamicObjects.delete(uuid)
+    }
   }
 
   createWall({ state: {
@@ -95,6 +100,13 @@ class Physic extends Member {
     wall.groupCollision = WALLS
 
     this._staticObjects.set(uuid, wall)
+  }
+
+  deleteWall({ state: uuid }) {
+    if(this._staticObjects.has(uuid)) {
+      this.collisionSystem.remove(this._staticObjects.get(uuid))
+      this._staticObjects.delete(uuid)
+    }
   }
 
   step() {

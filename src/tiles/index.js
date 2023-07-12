@@ -4,9 +4,11 @@ const genUuid = Types.UUID.Def().rand
 const loadTilesEvent = require("../events/load-tiles")
 const addSpwanEvent = require("../events/objects/add-spawn")
 const createWallsEvent = require("../events/objects/create-walls-object")
+const removeWallsEvent = require("../events/objects/remove-walls-object")
 const physicUpdateEvent = require("../events/objects/update-physic")
 const createHPEvent = require("../events/objects/create-hp")
 const deleteHPEvent = require("../events/objects/remove-hp")
+const destroyEvent = require("../events/objects/destroyed-object")
 const updateEvent = require("../events/objects/update-tiles")
 
 class Tiles extends Member {
@@ -15,6 +17,7 @@ class Tiles extends Member {
 
     this.tiles = [null]// TODO: Make zero for errors
     this.tilesets = [null]// TODO: Make zero for errors
+    this.walls = new Map
     this.map = {}
     this.onEvent(loadTilesEvent, payload => this.load(payload))
   }
@@ -24,6 +27,7 @@ class Tiles extends Member {
     this.loadMap(tileMap)
     
     this.onEvent(physicUpdateEvent, payload => this.physicUpdated(payload))
+    this.onEvent(destroyEvent, payload => this.destroy(payload))
   }
 
   physicUpdated(payload) {
@@ -263,6 +267,28 @@ class Tiles extends Member {
       layer.tiles[row] = []
 
     layer.tiles[row][column] = tile
+    this.walls.set(uuid, {
+      layerUuid,
+      column,
+      row
+    })
+  }
+
+  destroy({ state: uuid }) {
+    if(this.walls.has(uuid))
+      this.deleteWall(uuid)
+  }
+  deleteWall(uuid) {
+    const {
+      layerUuid,
+      column,
+      row 
+    } = this.walls.get(uuid)
+
+    delete this.map[layerUuid].tiles[row][column]
+    this.walls.delete(uuid)
+    this.send(deleteHPEvent, { state: uuid })
+    this.send(removeWallsEvent, { state: uuid })
   }
 
   serialize() {
