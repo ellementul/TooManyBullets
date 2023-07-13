@@ -94,14 +94,10 @@ class CharactersManager extends Member {
     const characterUuid = this._players.get(playerUuid)
     const character = this._characters.get(characterUuid)
 
+    character.changeShotDirect(direct)
+
     this.send(spwanBulletEvent, {
-      state: {
-        direct,
-        position: { 
-          x: character.position.x + character.box.width,
-          y: character.position.y
-        }
-      }
+      state: character.getSpawnBulletPostitonAndDirect()
     })
   }
 
@@ -131,6 +127,7 @@ class Character {
     this.playerUid = playerUid
     this.speed = 0
     this.velocity = { x: 0, y: 0 }
+    this.shotDirect = { x: 1, y: 0 }
     this.box = {
       width: 100,
       height: 340
@@ -149,6 +146,31 @@ class Character {
     this.position = { x, y }
 
     return this
+  }
+
+  getSpawnBulletPostitonAndDirect() {
+    const characterCenter = {
+      x: this.position.x + this.box.width / 2,
+      y: this.position.y + this.box.height / 2
+    }
+    const offsetBullet = {
+      x:  Math.abs(this.shotDirect.x) > Math.abs(this.shotDirect.y) ? Math.sign(this.shotDirect.x) : this.shotDirect.x,
+      y:  Math.abs(this.shotDirect.y) > Math.abs(this.shotDirect.x) ? Math.sign(this.shotDirect.y) : this.shotDirect.y,
+    }
+    return {
+      direct: this.shotDirect,
+      position: {
+        x: characterCenter.x + offsetBullet.x * (this.box.width / 2),
+        y: characterCenter.y + offsetBullet.y * (this.box.height / 2)
+      }
+    }
+  }
+
+  changeShotDirect(direct) {
+    if(!this.isSpawned())
+      return
+
+    this.shotDirect = direct
   }
 
   changeDirection(direct) {

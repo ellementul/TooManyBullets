@@ -72,8 +72,21 @@ class BulletsManager extends Member {
 class Bullet {
   constructor({ direct, position }) {
     this.uuid = genUuid()
-    this.position = { ...position }
-    this.speed = 750
+    this.box = { 
+      width: 128, 
+      height: 128 
+    }
+
+    const offsetBullet = {
+      x:  Math.abs(direct.x) > Math.abs(direct.y) ? Math.sign(direct.x) : direct.x,
+      y:  Math.abs(direct.y) > Math.abs(direct.x) ? Math.sign(direct.y) : direct.y,
+    }
+
+    this.position = {
+      x: position.x + ((offsetBullet.x - 1) / 2) * this.box.width,
+      y: position.y + ((offsetBullet.y - 1) / 2) * this.box.height
+    }
+    this.speed = 800
     this.velocity = {
       x: direct.x * this.speed,
       y: direct.y * this.speed
@@ -85,10 +98,7 @@ class Bullet {
     return {
       uuid: this.uuid,
       shape: "Box",
-      box: { 
-        width: 128, 
-        height: 128 
-      },
+      box: this.box,
       position: this.position,
       velocity: this.velocity,
       groupCollision: this._groupCollision

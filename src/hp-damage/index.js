@@ -36,8 +36,6 @@ class HPDamage extends Member {
     const firstObj = this.objects.get(uuids[0])
     const secondObj = this.objects.get(uuids[1])
 
-    console.log(firstObj, secondObj)
-
     if(firstObj.isDestroyed || secondObj.isDestroyed)
       return
 
