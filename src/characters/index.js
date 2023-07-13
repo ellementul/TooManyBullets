@@ -189,6 +189,7 @@ class Character {
     const { x, y } = this.position
     return {
       uuid: this.uuid,
+      playerUuid: this.playerUid,
       shape: "Box",
       box: { width, height },
       position: { x, y },
