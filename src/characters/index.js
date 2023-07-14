@@ -142,7 +142,7 @@ class Character {
       return
   
     this.changeState(STAND)
-    this.speed = 500
+    this.speed = 1400
     this.position = { x, y }
 
     return this
@@ -173,9 +173,29 @@ class Character {
     this.shotDirect = direct
   }
 
+  vectorLength({x, y}) {
+    return Math.sqrt(x*x + y*y)
+  }
+
+  vectorNormalize({x, y}) {
+    if(x === 0 || y === 0)
+      return {
+        x: Math.sign(x), 
+        y: Math.sign(y)
+      }
+
+    const length = this.vectorLength({x, y})
+    return {
+      x: x / length,
+      y: y / length,
+    }
+  }
+
   changeDirection(direct) {
     if(!this.isSpawned())
       return
+
+    direct = this.vectorNormalize(direct)
 
     this.velocity = { 
       x: direct.x * this.speed, 

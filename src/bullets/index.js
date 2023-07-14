@@ -86,7 +86,7 @@ class Bullet {
       x: position.x + ((offsetBullet.x - 1) / 2) * this.box.width,
       y: position.y + ((offsetBullet.y - 1) / 2) * this.box.height
     }
-    this.speed = 800
+    this.speed = 2000
     this.velocity = {
       x: direct.x * this.speed,
       y: direct.y * this.speed
