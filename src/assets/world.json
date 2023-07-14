@@ -73,7 +73,13 @@
         },
         "spawns": [
           {
-            "number": 1
+            "tileId": 1
+          }
+        ],
+        "walls": [
+          {
+            "tileId": 2,
+            "hp": 50
           }
         ]
       }
