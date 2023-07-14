@@ -17,27 +17,11 @@ class Tiles extends Member {
   constructor() {
     super()
 
-    this.grounds = new ChunksList
-    this.walls = new ChunksList
+    this.grounds = new ChunksList("background")
+    this.walls = new ChunksList("walls")
 
     this.onEvent(loadTilesEvent, payload => this.load(payload))
   }
-
-  // 
-  // else {
-  //   this.send(createHPEvent,  { state:  { 
-  //     uuid, 
-  //     hp: 50, 
-  //     damage: 50, 
-  //     isApplyDamage: true
-  //   }})
-  //   this.send(createWallsEvent, { state: {
-  //     uuid,
-  //     position: { row, column },
-  //     size,
-  //     tileSize
-  //   }})
-  // }
 
   load({ state: tileMap }) {
     const parser = new Parser
@@ -57,7 +41,20 @@ class Tiles extends Member {
     this.walls.add(wall)
 
     if(wall.isSpawn)
-      this.isSpawn(wall)
+      return this.addSpawn(wall)
+    
+    const { uuid, isApplyDamage, hp, position, tilesetRect }= wall
+    this.send(createHPEvent,  { state:  { 
+      uuid, 
+      hp, 
+      damage: 50, 
+      isApplyDamage
+    }})
+    this.send(createWallsEvent, { state: {
+      uuid,
+      position: { ...position },
+      tileSize: { ...tilesetRect }
+    }})
   }
 
   addSpawn(spawn) {
@@ -94,43 +91,18 @@ class Tiles extends Member {
     this.send(removeWallsEvent, { state: uuid })
   }
 
-  physicUpdated(payload) {
-    // console.log(this.serialize())
-    // this.send(updateEvent, {
-    //   state: this.serialize()
-    // })
+  physicUpdated() {
+    this.send(updateEvent, {
+      state: this.serialize()
+    })
   }
 
   serialize() {
     const layers = [
-      ...this.grounds.toDrawLayers()
+      ...this.grounds.toDrawLayers(),
+      ...this.walls.toDrawLayers()
     ]
 
-    // for (const layerUuid in tileMap) {
-    //   const layer = tileMap[layerUuid]
-
-    //   const tiles = []
-    //   layer.tiles.forEach(row => row.forEach(tile => {
-    //     if(tile.isSpawn)
-    //       return
-
-    //     const { row, column, z } = tile.position
-    //     const { height, width, x, y } = tile.tilesetRect
-    //     tiles.push({
-    //       uuid: tile.uuid,
-    //       texture: tile.tileset.texture,
-    //       position: { row, column, z },
-    //       frame: { height, width, x, y },
-    //     })
-    //   }))
-    //   layers.push({
-    //     uuid: layerUuid,
-    //     type: layer.type,
-    //     tiles,
-    //     size: layer.size,
-    //     tileSize: layer.tileSize
-    //   })
-    // }
     return { layers }
   }
 }

@@ -40,7 +40,7 @@ class Parser {
   }
 
   getTilesFromTilesets(tilesetsIds) {
-    return tilesetsIds.reduce((tiles, tilesetId) => tiles.concat(this.tilesets[tilesetId].tiles), [])
+    return tilesetsIds.reduce((tiles, tilesetId) => tiles.concat(this.tilesets[tilesetId].tiles), [null])
   }
 
   getGrounds({
@@ -89,7 +89,7 @@ class Parser {
       height: rows,
       width: columns
     },
-    wallsHp = {},
+    walls = [],
     spawns = []
   }) {
 
@@ -97,40 +97,62 @@ class Parser {
       throw new TypeError("Inccorect number tiles in layer!")
 
     const tiles = this.getTilesFromTilesets(tilesetsIds)
-    const spawnsIds = []
-    if(Array.isArray(spawns)) {
-      spawnsIds.push(...spawns.map(spawn => spawn.tileId))
-    }
+    
+    if(Array.isArray(spawns))
+      spawns = this.parsingList(spawns)
+      
+    if(Array.isArray(walls))
+      walls = this.parsingList(walls)
     
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < columns; c++) {
         const tileId = tilesIds[r*columns + c]
 
-        if(tileId >>> 29 != 0)
-          throw new TypeError("Tile has flip or turn!")
+        const tile = this.parsingWall({ 
+          tileId, 
+          type,
+          position: {
+            row: r,
+            column: c
+          },
+          tiles, 
+          walls, 
+          spawns
+        })
 
-        if(tileId == 0)
-          continue
-
-        const tile = tiles[tileId].copy()
-
-        if(wallsHp[tileId])
-          tile.hp = walls[tileId]
-        
-        tile.isApplyDamage = !!(wallsHp[tileId])
-
-        if(spawnsIds.includes(tileId))
-          tile.isSpawn = true
-
-        tile.type = type
-        tile.position = {
-          row: r,
-          column: c
-        }
-
-        this.walls.push(tile)
+        if(tile)
+          this.walls.push(tile)
       }
     }
+  }
+
+  parsingWall({ tileId, type, tiles, walls, spawns, position}) {
+    if(tileId >>> 29 != 0)
+          throw new TypeError("Tile has flip or turn!")
+
+    if(tileId == 0)
+      return
+
+    const tile = tiles[tileId].copy()
+    tile.type = type
+    tile.position = position
+
+    if(walls.has(tileId))
+      tile.hp = walls.get(tileId).hp || 1
+    
+    tile.isApplyDamage = !!(walls.has(tileId))
+
+    if(spawns.has(tileId))
+      tile.isSpawn = true
+
+    return tile
+  }
+
+  parsingList(array) {
+    const map = new Map
+    array.forEach(tile => map.set(tile.tileId, tile))
+
+    return map
   }
 }
 

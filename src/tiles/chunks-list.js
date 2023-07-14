@@ -4,8 +4,11 @@ const genUuid = Types.UUID.Def().rand
 const CHUNK_LIMIT = 256
 
 class ChunksList extends Map {
-  constructor() {
+  constructor(type) {
     super()
+
+    this.type = type
+    this.tileSize = { width: 360, height: 360 }
 
     this.plan = new Plan
 
@@ -47,6 +50,20 @@ class ChunksList extends Map {
     if(emptyChunk.size === 0)
       this.set(emptyChunk.uuid, emptyChunk)
   }
+
+  toDrawLayers() {
+    const layers = []
+    for (const [uuid, chunk] of this) {
+      layers.push({
+        uuid: uuid,
+        type: this.type,
+        tileSize: this.tileSize,
+        tiles: chunk.toDrawTiles()
+      })
+    }
+
+    return layers
+  }
 }
 
 class Plan extends Array {
@@ -82,6 +99,21 @@ class Chunk extends Map {
   add(tile) {
     tile.chunkUuid = this.uuid
     super.set(tile.uuid, tile)
+  }
+
+  toDrawTiles() {
+    const tiles = []
+    for(const [uuid, tile] of this) {
+      tiles.push({
+        uuid: tile.uuid,
+        texture: tile.texture,
+        position: { ...tile.position },
+        frame: { ...tile.tilesetRect },
+        isSpawn: tile.isSpawn
+      })
+    }
+
+    return tiles
   }
 }
 
