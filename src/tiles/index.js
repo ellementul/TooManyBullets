@@ -17,7 +17,7 @@ class Tiles extends Member {
   constructor() {
     super()
 
-    this.grounds = new ChunksList("background")
+    this.grounds = new ChunksList("ground")
     this.walls = new ChunksList("walls")
 
     this.onEvent(loadTilesEvent, payload => this.load(payload))
