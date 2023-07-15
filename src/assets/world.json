@@ -5,7 +5,7 @@
     "renderorder":"right-down",
     "layers":[
       {
-        "type": "background",
+        "type": "ground",
         "tilesets": [1],
         "tiles": [
           1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,

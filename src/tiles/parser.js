@@ -12,7 +12,7 @@ class Parser {
     this.getTilesets(tileMap.tilesets)
 
     tileMap.layers
-    .filter(layer => layer.type == "background")
+    .filter(layer => layer.type == "ground")
     .forEach(layer => this.getGrounds(layer))
 
     tileMap.layers
