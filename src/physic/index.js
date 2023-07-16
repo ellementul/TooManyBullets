@@ -27,7 +27,7 @@ class Physic extends Member {
     this.groupsCollisions = new Collision
     this.collisionSystem = new System
 
-    this.limit = 360*16
+    this.limit = 360*36
     
     this.onEvent(runEvent, () => this.run())
     this.onEvent(stopEvent, () => this.stop())
