@@ -4,7 +4,7 @@ const loadWorldEvent = require("../events/load-world")
 const readyEvent = require("../events/ready-world")
 const loadTilesEvent = require("../events/load-tiles")
 
-const world = require("../assets/world.json")
+const { default: world } = require("../assets/world.yaml")
 
 class World extends Member {
   constructor() {
@@ -14,6 +14,7 @@ class World extends Member {
   }
 
   start() {
+    console.log(world)
     this.send(loadTilesEvent, { state: world.tileMap })
     this.send(readyEvent)
   }

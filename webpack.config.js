@@ -10,6 +10,14 @@ module.exports = {
     path: path.resolve(__dirname, './public'),
     filename: '[name].bundle.js',
   },
+  module: {
+    rules: [
+      {
+        test: /\.ya?ml$/,
+        use: 'yaml-loader'
+      }
+    ]
+  },
   plugins: [
     new HtmlWebpackPlugin({
         title: 'TMB Host',
