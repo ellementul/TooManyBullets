@@ -14,7 +14,6 @@ class World extends Member {
   }
 
   start() {
-    console.log(world)
     this.send(loadTilesEvent, { state: world.tileMap })
     this.send(readyEvent)
   }
