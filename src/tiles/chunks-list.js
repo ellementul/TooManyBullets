@@ -1,6 +1,8 @@
 const { Types } = require('@ellementul/united-events-environment')
 const genUuid = Types.UUID.Def().rand
 
+const { Plan, PlanWithBorder }  = require('./plan')
+
 const CHUNK_LIMIT = 256
 
 class ChunksList extends Map {
@@ -10,7 +12,7 @@ class ChunksList extends Map {
     this.type = type
     this.tileSize = { width: 360, height: 360 }
 
-    this.plan = new Plan
+    this.plan = type === "ground" ? new PlanWithBorder : new Plan
 
     this.current = new Chunk
     this.set(this.current.uuid, this.current)
@@ -54,39 +56,15 @@ class ChunksList extends Map {
   toDrawLayers() {
     const layers = []
     for (const [uuid, chunk] of this) {
-      if(chunk.isUpdatedDraw)
-        layers.push({
-          uuid: uuid,
-          type: this.type,
-          tileSize: this.tileSize,
-          tiles: chunk.toDrawTiles()
-        })
+      layers.push({
+        uuid: uuid,
+        type: this.type,
+        tileSize: this.tileSize,
+        tiles: chunk.toDrawTiles()
+      })
     }
 
     return layers
-  }
-}
-
-class Plan extends Array {
-  add(tile) {
-    const { row, column} = tile.position
-
-    if(!this[row])
-      this[row] = []
-
-    if(!this[row][column])
-      this[row][column] = tile
-  }
-
-  delete({ row, column }) {
-    if(!this[row])
-      return
-
-    if(this[row][column]) {
-      const tile = this[row][column]
-      delete this[row][column]
-      return tile
-    }
   }
 }
 
@@ -95,18 +73,15 @@ class Chunk extends Map {
     super()
 
     this.uuid = genUuid()
-    this.isUpdatedDraw = false
   }
 
   add(tile) {
     tile.chunkUuid = this.uuid
     super.set(tile.uuid, tile)
-    this.isUpdatedDraw = true
   }
 
   delete(uuid) {
     super.delete(uuid)
-    this.isUpdatedDraw = true
   }
 
   toDrawTiles() {
@@ -120,8 +95,6 @@ class Chunk extends Map {
         isSpawn: tile.isSpawn
       })
     }
-
-    this.isUpdatedDraw = false
     return tiles
   }
 }

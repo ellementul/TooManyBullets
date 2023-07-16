@@ -26,7 +26,10 @@ class Tiles extends Member {
   load({ state: tileMap }) {
     const parser = new Parser
     const { grounds, walls } = parser.parsing(tileMap)
+
     grounds.forEach(ground => this.addGround(ground))
+    this.updateOutWalls()
+
     walls.forEach(wall => this.addWall(wall))
 
     this.onEvent(physicUpdateEvent, payload => this.physicUpdated(payload))
@@ -54,6 +57,14 @@ class Tiles extends Member {
       uuid,
       position: { ...position },
       tileSize: { ...tilesetRect }
+    }})
+  }
+
+  addOutWall({ uuid, position }) {
+    this.send(createWallsEvent, { state: {
+      uuid,
+      position: { ...position },
+      tileSize: { ...this.walls.tileSize }
     }})
   }
 
@@ -89,6 +100,12 @@ class Tiles extends Member {
     this.walls.delete(uuid, chunkUuid)
     this.send(deleteHPEvent, { state: uuid })
     this.send(removeWallsEvent, { state: uuid })
+  }
+
+  updateOutWalls() {
+    const { added } = this.grounds.plan.getCellsOut()
+    added.forEach(outWall => this.addOutWall(outWall))
+    this.grounds.plan.clearCellsOut()
   }
 
   physicUpdated() {
