@@ -68,6 +68,9 @@ class Parser {
         if(tileId == 0)
           continue
 
+        if(!tiles[tileId])
+          throw new TypeError(`TileId in Ground is undefined! TileId: ${tileId}`)
+
         const tile = tiles[tileId].copy()
 
         tile.type = type
@@ -132,6 +135,9 @@ class Parser {
 
     if(tileId == 0)
       return
+
+    if(!tiles[tileId])
+      throw new TypeError(`TileId in Walls is undefined! TileId: ${tileId}`)
 
     const tile = tiles[tileId].copy()
     tile.type = type
