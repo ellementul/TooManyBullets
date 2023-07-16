@@ -19,7 +19,8 @@ class ChunksList extends Map {
   }
 
   add(tile) {
-    this.getEmptyChunck().add(tile)
+    const chunk = this.getEmptyChunck()
+    chunk.add(tile)
     this.plan.add(tile)
   }
 
@@ -51,6 +52,8 @@ class ChunksList extends Map {
 
     if(emptyChunk.size === 0)
       this.set(emptyChunk.uuid, emptyChunk)
+
+    return this.current
   }
 
   toDrawLayers() {
