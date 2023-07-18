@@ -6,11 +6,11 @@ const { Plan, PlanWithBorder }  = require('./plan')
 const CHUNK_LIMIT = 256
 
 class ChunksList extends Map {
-  constructor(type) {
+  constructor(type, tileSize) {
     super()
 
     this.type = type
-    this.tileSize = { width: 360, height: 360 }
+    this.tileSize = { ...tileSize }
 
     this.plan = type === "ground" ? new PlanWithBorder : new Plan
 

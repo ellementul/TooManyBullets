@@ -11,6 +11,8 @@ class Parser {
   parsing(tileMap) {
     this.getTilesets(tileMap.tilesets)
 
+    this.tileSize = { ...tileMap.tileSize }
+
     tileMap.layers
     .filter(layer => layer.type == "ground")
     .forEach(layer => this.getGrounds(layer))

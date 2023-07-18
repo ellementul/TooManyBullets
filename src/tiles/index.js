@@ -17,15 +17,18 @@ class Tiles extends Member {
   constructor() {
     super()
 
-    this.grounds = new ChunksList("ground")
-    this.walls = new ChunksList("walls")
+    this.grounds = null
+    this.walls = null
 
     this.onEvent(loadTilesEvent, payload => this.load(payload))
   }
 
   load({ state: tileMap }) {
     const parser = new Parser
-    const { grounds, walls } = parser.parsing(tileMap)
+    const { grounds, walls, tileSize } = parser.parsing(tileMap)
+
+    this.grounds = new ChunksList("ground", tileSize)
+    this.walls = new ChunksList("walls", tileSize)
 
     grounds.forEach(ground => this.addGround(ground))
     this.updateOutWalls()

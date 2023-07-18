@@ -1,4 +1,7 @@
 tileMap:
+  tileSize:
+    height: 360
+    width: 360
   layers:
     - type: "ground"
       tilesets: [1]
@@ -18,9 +21,6 @@ tileMap:
       size:
         height: 8
         width: 8
-      tileSize:
-        height: 360
-        width: 360
     - type: "walls"
       tilesets: [1]
       tiles: [
@@ -39,9 +39,6 @@ tileMap:
       size:
         height: 8
         width: 8
-      tileSize:
-        height: 360
-        width: 360
       spawns:
         - tileId: 10
   tilesets:
