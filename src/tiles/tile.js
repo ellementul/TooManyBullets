@@ -29,7 +29,9 @@ class Tile {
         width: this.tilesetRect.width,
         x: this.tilesetRect.x,
         y: this.tilesetRect.y,
-      }
+      },
+      isExtra: this.isExtra,
+      bottomView: this.bottomView
     }
   }
 }

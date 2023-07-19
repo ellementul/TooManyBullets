@@ -29,13 +29,15 @@ class Parser {
       tilesetUid,
       tileSize,
       size,
-      texture
+      texture,
+      extraTiles
     }) => {
       const tileset = new Tileset({
         tilesetUid,
         tileSize,
         size,
-        texture
+        texture,
+        extraTiles
       })
       this.tilesets[tileset.uid] = tileset
     });
@@ -74,6 +76,9 @@ class Parser {
           throw new TypeError(`TileId in Ground is undefined! TileId: ${tileId}`)
 
         const tile = tiles[tileId].copy()
+
+        if(tile.isExtra)
+          continue
 
         tile.type = type
         tile.position = {
