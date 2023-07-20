@@ -77,9 +77,6 @@ class Parser {
 
         const tile = tiles[tileId].copy()
 
-        if(tile.isExtra)
-          continue
-
         tile.type = type
         tile.position = {
           row: r,
@@ -129,6 +126,8 @@ class Parser {
           walls, 
           spawns
         })
+
+        
 
         if(tile)
           this.walls.push(tile)

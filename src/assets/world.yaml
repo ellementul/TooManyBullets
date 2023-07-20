@@ -12,8 +12,8 @@ tileMap:
         6, 7, 7, 7, 7, 7, 7, 8,
         6, 7, 7, 7, 7, 7, 7, 8,
         6, 7, 7, 7, 7, 7, 7, 8,
-        10, 11, 11, 11, 11, 11, 11, 12,
-        14, 15, 15, 15, 15, 15, 15, 16
+        6, 7, 7, 7, 7, 7, 7, 8,
+        10, 11, 11, 11, 11, 11, 11, 12
       ]
       position:
         x: 0
@@ -31,7 +31,7 @@ tileMap:
         0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 1, 0, 0, 0, 0, 0
       ]
       position:
         x: 0
@@ -43,25 +43,6 @@ tileMap:
         - tileId: 10
   tilesets:
     - tilesetUid: 1
-      extraTiles:
-        - target:
-            row: 3
-            column: 2
-          bottom:
-            row: 4
-            column: 2
-        - target:
-            row: 3
-            column: 3
-          bottom:
-            row: 4
-            column: 3
-        - target:
-            row: 3
-            column: 4
-          bottom:
-            row: 4
-            column: 4
       tileSize:
         height: 360
         width: 360

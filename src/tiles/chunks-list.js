@@ -14,7 +14,7 @@ class ChunksList extends Map {
 
     this.plan = type === "ground" ? new PlanWithBorder : new Plan
 
-    this.current = new Chunk
+    this.current = new Chunk(this.plan)
     this.set(this.current.uuid, this.current)
   }
 
@@ -42,7 +42,7 @@ class ChunksList extends Map {
     if(this.current.size < CHUNK_LIMIT)
       return this.current
 
-    const emptyChunk = new Chunk
+    const emptyChunk = new Chunk(this.plan)
     for (const [uuid, chunk] of this) {
       if(chunk.size < emptyChunk.size || (emptyChunk.size === 0 && chunk.size < CHUNK_LIMIT))
         emptyChunk = chunk
@@ -72,10 +72,11 @@ class ChunksList extends Map {
 }
 
 class Chunk extends Map {
-  constructor() {
+  constructor(plan) {
     super()
 
     this.uuid = genUuid()
+    this.plan = plan
   }
 
   add(tile) {
@@ -90,13 +91,16 @@ class Chunk extends Map {
   toDrawTiles() {
     const tiles = []
     for(const [uuid, tile] of this) {
-      tiles.push({
+      const { row, column } = tile.position
+      const tileToDraw = {
         uuid: tile.uuid,
         texture: tile.texture,
-        position: { ...tile.position },
+        position: { row, column },
         frame: { ...tile.tilesetRect },
         isSpawn: tile.isSpawn
-      })
+      }
+
+      tiles.push(tileToDraw)
     }
     return tiles
   }

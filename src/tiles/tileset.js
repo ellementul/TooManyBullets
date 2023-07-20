@@ -11,7 +11,7 @@ class Tileset {
     this.uid = tilesetUid
     this.tiles = []
     this.texture = texture
-    this.extraTiles = extraTiles
+    this.targets = {}
 
     this.createTiles(tileSize, size)
   }
@@ -30,53 +30,9 @@ class Tileset {
           }
         })
 
-        this.setExtraTiles(newTile, { row, column }, { tHeight, tWidth })
-
         this.tiles.push(newTile)
       }
     }
-  }
-
-  setExtraTiles(newTile, positionInTileset, { tHeight, tWidth }) {
-    if(this.isExtraTile(positionInTileset)) {
-      newTile.isExtra = true
-      return
-    }
-
-    const { bottom } = this.getExtraTilesForTarget(positionInTileset)
-
-    if(bottom)
-      newTile.bottomView = new Tile({ 
-        tileset: this, 
-        tilesetRect: {
-          tHeight,
-          tWidth,
-          row: bottom.row - 1,
-          column: bottom.column - 1
-        }
-      })
-  }
-
-  isExtraTile({ row, column }) {
-    for (const key in this.extraTiles) {
-      const { target, bottom } = this.extraTiles[key]
-
-      if (bottom.row === row && bottom.column === column)
-        return true
-    }
-
-    return false
-  }
-
-  getExtraTilesForTarget({ row, column }) {
-    for (const key in this.extraTiles) {
-      const { target, bottom } = this.extraTiles[key]
-
-      if (target.row === row && target.column === column)
-        return { bottom }
-    }
-
-    return {}
   }
 }
 
