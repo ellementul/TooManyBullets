@@ -1,8 +1,0 @@
-number_tile >>> 29:
-  indical: 0
-  vertical flip: 2
-  Right turn: 3
-  horizontal flip: 4
-  Left Turn: 5
-  180 agree turn: 6
-clear_nember: number_tile % Math.pow(2, 29)
