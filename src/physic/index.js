@@ -1,6 +1,7 @@
 const { Member, events: { time } } = require('@ellementul/united-events-environment')
 const { System } = require("detect-collisions");
 
+const loadEvent = require("../events/load-data")
 const runEvent = require("../events/run-world")
 const stopEvent = require("../events/pause-world")
 const createDynamicObject = require("../events/objects/create-dynamic-object")
@@ -12,13 +13,14 @@ const updateEvent = require("../events/objects/update-physic")
 const overlapEvent = require("../events/objects/overlap-objects")
 const outLimitObjectEvent = require("../events/objects/out-limit-world")
 
+const LOAD = Symbol("Loading")
 const PAUSE = Symbol("Pause")
 const RUNNING = Symbol("Running")
 class Physic extends Member {
   constructor() {
     super()
 
-    this._state = PAUSE
+    this._state = LOAD
     this.timer = new Timer
 
     this._dynamicObjects = new Map
@@ -29,6 +31,13 @@ class Physic extends Member {
 
     this.limit = 360*36
     
+    this.onEvent(loadEvent, payload => this.load(payload))
+  }
+
+  load({ resources: { physic } }) {
+
+    this.limitsRect = physic.limitsRect
+
     this.onEvent(runEvent, () => this.run())
     this.onEvent(stopEvent, () => this.stop())
     this.onEvent(createDynamicObject, payload => this.createDynamic(payload))
@@ -37,9 +46,9 @@ class Physic extends Member {
     this.onEvent(createWallsEvent, payload => this.createWall(payload))
     this.onEvent(removeWallsEvent, payload => this.deleteWall(payload))
     this.onEvent(time, () => this.step())
-  }
 
-  addTiles(){}
+    this.stop()
+  }
 
   run() {
     this._state = RUNNING
@@ -164,8 +173,13 @@ class Physic extends Member {
   }
 
   checkLimitOfPosition({ x , y }) {
-    const maxCoord = Math.max(Math.abs(x), Math.abs(y))
-    return maxCoord > this.limit
+    if(x < this.limitsRect.x || x > this.limitsRect.width)
+      return true
+
+    if(y < this.limitsRect.y || y > this.limitsRect.height)
+      return true
+
+    return false
   }
 
   updatePosition(object) {
