@@ -5,6 +5,7 @@ const { Logging } = require('./logging')
 const { GameSession } = require("./game-session")
 const { PlayersManager } = require("./players-manager")
 const { World } = require("./world")
+const { Store } = require("./store")
 const { Physic } = require("./physic")
 const { Tiles } = require("./tiles")
 const { Spawns } = require("./spawns")
@@ -17,6 +18,7 @@ const membersList = {
     GameSession,
     PlayersManager,
     World,
+    Store,
     Physic,
     Tiles,
     Spawns,
