@@ -97,13 +97,17 @@ class Physic extends Member {
   createWall({ state: {
     uuid,
     position: { row, column },
-    tileSize
+    tileSize,
+    half
   }}) {
     const position = {
       x: column * tileSize.width,
       y: row * tileSize.height,
     }
-    const width = tileSize.width
+    if(half === "right")
+      position.x += tileSize.width * 0.5
+
+    const width = half ? tileSize.width * 0.5 : tileSize.width
     const height = tileSize.height
     const options = { isStatic: true }
 

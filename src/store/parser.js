@@ -153,10 +153,15 @@ class Parser {
     tile.type = type
     tile.position = position
 
-    if(walls.has(tileId))
-      tile.hp = walls.get(tileId).hp || 1
-    
-    tile.isApplyDamage = !!(walls.has(tileId))
+    if(walls.has(tileId)) {
+      const wall = walls.get(tileId)
+
+      tile.isApplyDamage = !!wall.hp
+
+      tile.hp = wall.hp || 1
+
+      tile.half = wall.half
+    }
 
     if(spawns.has(tileId))
       tile.isSpawn = true

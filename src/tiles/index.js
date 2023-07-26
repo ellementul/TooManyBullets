@@ -58,10 +58,12 @@ class Tiles extends Member {
       damage: 50, 
       isApplyDamage
     }})
+    
     this.send(createWallsEvent, { state: {
       uuid,
       position: { ...position },
-      tileSize: { ...this.walls.tileSize }
+      tileSize: { ...this.walls.tileSize },
+      half: wall.half
     }})
   }
 

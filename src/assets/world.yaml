@@ -61,6 +61,13 @@ tileMap:
         width: 16
       spawns:
         - tileId: 41
+      walls:
+        - tileId: 47
+          hp: 100
+          half: "left"
+        - tileId: 46
+          hp: 100
+          half: "right"
   tilesets:
     - tilesetUid: 1
       tileSize:
