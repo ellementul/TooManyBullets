@@ -1,9 +1,11 @@
 const { Member } = require('@ellementul/united-events-environment')
 
-const { Parser } = require('./parser')
 const { ChunksList } = require('./chunks-list')
 
 const loadTilesEvent = require("../events/load-tiles")
+const loadEvent = require("../events/load-data")
+const readyEvent = require("../events/ready-system")
+
 const addSpwanEvent = require("../events/objects/add-spawn")
 const createWallsEvent = require("../events/objects/create-walls-object")
 const removeWallsEvent = require("../events/objects/remove-walls-object")
@@ -20,13 +22,11 @@ class Tiles extends Member {
     this.grounds = null
     this.walls = null
 
-    this.onEvent(loadTilesEvent, payload => this.load(payload))
+    // this.onEvent(loadTilesEvent, payload => this.load(payload))
+    this.onEvent(loadEvent, payload => this.load(payload))
   }
 
-  load({ state: tileMap }) {
-    const parser = new Parser
-    const { grounds, walls, tileSize } = parser.parsing(tileMap)
-
+  load({ resources: { tileMap: { grounds, walls, tileSize } } }) {
     this.grounds = new ChunksList("ground", tileSize)
     this.walls = new ChunksList("walls", tileSize)
 
@@ -37,6 +37,8 @@ class Tiles extends Member {
 
     this.onEvent(physicUpdateEvent, payload => this.physicUpdated(payload))
     this.onEvent(destroyEvent, payload => this.destroy(payload))
+
+    this.send(readyEvent, { state: { system: "Tiles" }})
   }
 
   addGround(ground) {

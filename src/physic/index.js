@@ -2,8 +2,10 @@ const { Member, events: { time } } = require('@ellementul/united-events-environm
 const { System } = require("detect-collisions");
 
 const loadEvent = require("../events/load-data")
+const readyEvent = require("../events/ready-system")
 const runEvent = require("../events/run-world")
 const stopEvent = require("../events/pause-world")
+
 const createDynamicObject = require("../events/objects/create-dynamic-object")
 const updateDynamicObject = require("../events/objects/update-dynamic-object")
 const removeDynamicObject = require("../events/objects/remove-dynamic-object")
@@ -48,6 +50,7 @@ class Physic extends Member {
     this.onEvent(time, () => this.step())
 
     this.stop()
+    this.send(readyEvent, { state: { system: "Physic" }})
   }
 
   run() {

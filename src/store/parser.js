@@ -21,7 +21,11 @@ class Parser {
     .filter(layer => layer.type == "walls")
     .forEach(layer => this.getWalls(layer))
 
-    return this
+    return {
+      tileSize: this.tileSize,
+      grounds: this.grounds,
+      walls: this.walls
+    }
   }
 
   getTilesets(tilesets) {

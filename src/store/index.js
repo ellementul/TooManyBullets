@@ -1,5 +1,7 @@
 const { Member } = require('@ellementul/united-events-environment')
 
+const { Parser } = require('./parser')
+
 const loadEvent = require("../events/load-resources")
 const sendDataEvent = require("../events/load-data")
 
@@ -21,6 +23,10 @@ class Store extends Member {
         width: (world.tileMap.size.width + world.tileMap.padding) * world.tileMap.tileSize.width
       }
     }
+    const parser = new Parser
+    const { tileMap } = world
+    world.tileMap = parser.parsing(tileMap)
+
     this.sendResources(world)
   }
 
