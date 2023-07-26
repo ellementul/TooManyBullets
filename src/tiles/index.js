@@ -51,11 +51,11 @@ class Tiles extends Member {
     if(wall.isSpawn)
       return this.addSpawn(wall)
     
-    const { uuid, isApplyDamage, hp, position } = wall
+    const { uuid, isApplyDamage, hp, damage, position } = wall
     this.send(createHPEvent,  { state:  { 
       uuid, 
       hp, 
-      damage: 50, 
+      damage: damage,
       isApplyDamage
     }})
     

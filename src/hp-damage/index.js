@@ -51,15 +51,18 @@ class HPDamage extends Member {
 }
 
 class HP {
-  constructor({ hp = 1, damage = 0, isApplyDamage = false }) {
+  constructor({ hp = 1, damage, isApplyDamage = false }) {
     this.hp = hp
-    this.damage = damage
+    this.damage = damage || hp
     this.isApplyDamage = isApplyDamage
 
     this.isDestroyed = false 
   }
 
   applyDamage(damage) {
+    if(!this.isApplyDamage)
+      return
+
     this.hp -= damage
 
     if(this.hp <= 0)

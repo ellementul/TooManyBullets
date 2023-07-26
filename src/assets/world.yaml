@@ -62,12 +62,32 @@ tileMap:
       spawns:
         - tileId: 41
       walls:
+        - tileId: 61
+          hp: 30
+        - tileId: 60
+          hp: 30
+        - tileId: 59
+          hp: 30
+        - tileId: 58
+          hp: 30
+        - tileId: 56
+          hp: 30
+        - tileId: 52
+          hp: 30
+        - tileId: 51
+          hp: 30
+        - tileId: 50
+          hp: 30
         - tileId: 47
-          hp: 100
+          hp: 30
           half: "left"
         - tileId: 46
-          hp: 100
+          hp: 30
           half: "right"
+        - tileId: 44
+          hp: 30
+        - tileId: 42
+          hp: 30
   tilesets:
     - tilesetUid: 1
       tileSize:

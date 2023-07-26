@@ -131,8 +131,6 @@ class Parser {
           spawns
         })
 
-        
-
         if(tile)
           this.walls.push(tile)
       }
@@ -156,9 +154,10 @@ class Parser {
     if(walls.has(tileId)) {
       const wall = walls.get(tileId)
 
-      tile.isApplyDamage = !!wall.hp
-
-      tile.hp = wall.hp || 1
+      if(wall.hp) {
+        tile.hp = wall.hp
+        tile.isApplyDamage = true
+      }
 
       tile.half = wall.half
     }
