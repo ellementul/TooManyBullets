@@ -2,7 +2,6 @@ const { Member } = require('@ellementul/united-events-environment')
 
 const { ChunksList } = require('./chunks-list')
 
-const loadTilesEvent = require("../events/load-tiles")
 const loadEvent = require("../events/load-data")
 const readyEvent = require("../events/ready-system")
 

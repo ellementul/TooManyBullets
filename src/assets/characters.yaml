@@ -1,0 +1,5 @@
+- name: "Bob"
+  speed: 1400
+  hitBox:
+    width: 150
+    height: 300

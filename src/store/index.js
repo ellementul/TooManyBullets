@@ -5,7 +5,8 @@ const { Parser } = require('./parser')
 const loadEvent = require("../events/load-resources")
 const sendDataEvent = require("../events/load-data")
 
-const { default: world } = require("../assets/world.yaml")
+const { default: { tileMap } } = require("../assets/world.yaml")
+const { default: characters } = require("../assets/characters.yaml")
 
 class Store extends Member {
   constructor() {
@@ -15,19 +16,22 @@ class Store extends Member {
   }
 
   loadResources () {
-    world.physic = {
+    const resources = {}
+    resources.physic = {
       limitsRect: {
-        x: -1 * world.tileMap.padding * world.tileMap.tileSize.width,
-        y: -1 * world.tileMap.padding * world.tileMap.tileSize.height,
-        height: (world.tileMap.size.height + world.tileMap.padding) * world.tileMap.tileSize.height,
-        width: (world.tileMap.size.width + world.tileMap.padding) * world.tileMap.tileSize.width
+        x: -1 * tileMap.padding * tileMap.tileSize.width,
+        y: -1 * tileMap.padding * tileMap.tileSize.height,
+        height: (tileMap.size.height + tileMap.padding) * tileMap.tileSize.height,
+        width: (tileMap.size.width + tileMap.padding) * tileMap.tileSize.width
       }
     }
-    const parser = new Parser
-    const { tileMap } = world
-    world.tileMap = parser.parsing(tileMap)
 
-    this.sendResources(world)
+    const parser = new Parser
+    resources.tileMap = parser.parsing(tileMap)
+
+    resources.characters = characters
+
+    this.sendResources(resources)
   }
 
   sendResources (resources) {
