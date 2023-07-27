@@ -6,7 +6,8 @@ const type = Types.Object.Def({
   state: {
     system: Types.Any.Def([
       Types.Const.Def("Physic"),
-      Types.Const.Def("Tiles")
+      Types.Const.Def("Tiles"),
+      Types.Const.Def("Characters"),
     ])
   }
 }, true) 

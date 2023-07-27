@@ -11,7 +11,8 @@ class World extends Member {
 
     this.neededSytsems = {
       Physic: false,
-      Tiles: false
+      Tiles: false,
+      Characters: false,
     }
 
     this.onEvent(loadWorldEvent, () => this.load())
@@ -31,6 +32,7 @@ class World extends Member {
   readySystem({ state: { system } }) {
 
     this.neededSytsems[system] = true
+    console.log(`The ${system} system  is ready`)
     if(this.checkSystems())
       this.start()
   }

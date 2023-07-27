@@ -1,10 +1,13 @@
 const { Member, Types } = require('@ellementul/united-events-environment')
 const genUuid = Types.UUID.Def().rand
 
+const loadEvent = require("../events/load-data")
+const readyEvent = require("../events/ready-system")
+
 const connectedPlayerEvent = require("../events/players/connected-player")
 const disconnectedEvent = require("../events/players/disconnected-player")
 const spawnEvent = require("../events/objects/spawn-character")
-const readyEvent = require("../events/objects/ready-spawned")
+const spawnedEvent = require("../events/objects/ready-spawned")
 const createDynamicObject = require("../events/objects/create-dynamic-object")
 const updateDynamicObject = require("../events/objects/update-dynamic-object")
 const removeDynamicObject = require("../events/objects/remove-dynamic-object")
@@ -24,14 +27,20 @@ class CharactersManager extends Member {
     this._characters = new Map
     this._players = new Map
 
-    
+    this.onEvent(loadEvent, payload => this.load(payload))
+  }
+
+  load({ resources: { characters } }) {
+    console.log(characters)
     this.onEvent(connectedPlayerEvent, payload => this.addNewCharacter(payload))
     this.onEvent(disconnectedEvent, payload => this.deleteCharactersByPlayer(payload))
-    this.onEvent(readyEvent, payload => this.spawnCharacter(payload))
+    this.onEvent(spawnedEvent, payload => this.spawnCharacter(payload))
     this.onEvent(physicUpdateEvent, payload => this.physicUpdate(payload))
     this.onEvent(movingEvent, payload => this.moveCharacter(payload))
     this.onEvent(shotActionEvent, payload => this.shotCharacter(payload))
     this.onEvent(destroyEvent, payload => this.destroy(payload))
+
+    this.send(readyEvent, { state: { system: "Characters" }})
   }
 
   addNewCharacter({ state: playerUid }) {
