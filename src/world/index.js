@@ -13,6 +13,7 @@ class World extends Member {
       Physic: false,
       Tiles: false,
       Characters: false,
+      Bullets: false
     }
 
     this.onEvent(loadWorldEvent, () => this.load())

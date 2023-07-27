@@ -8,6 +8,7 @@ const type = Types.Object.Def({
       Types.Const.Def("Physic"),
       Types.Const.Def("Tiles"),
       Types.Const.Def("Characters"),
+      Types.Const.Def("Bullets"),
     ])
   }
 }, true) 

@@ -31,7 +31,7 @@ class CharactersManager extends Member {
   }
 
   load({ resources: { characters } }) {
-    console.log(characters)
+    // console.log(characters)
     this.onEvent(connectedPlayerEvent, payload => this.addNewCharacter(payload))
     this.onEvent(disconnectedEvent, payload => this.deleteCharactersByPlayer(payload))
     this.onEvent(spawnedEvent, payload => this.spawnCharacter(payload))

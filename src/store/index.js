@@ -7,6 +7,7 @@ const sendDataEvent = require("../events/load-data")
 
 const { default: { tileMap } } = require("../assets/world.yaml")
 const { default: characters } = require("../assets/characters.yaml")
+const { default: bullets } = require("../assets/characters.yaml")
 
 class Store extends Member {
   constructor() {
@@ -30,6 +31,7 @@ class Store extends Member {
     resources.tileMap = parser.parsing(tileMap)
 
     resources.characters = characters
+    resources.bullets = bullets
 
     this.sendResources(resources)
   }

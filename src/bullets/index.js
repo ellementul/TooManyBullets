@@ -1,6 +1,9 @@
 const { Member, Types } = require('@ellementul/united-events-environment')
 const genUuid = Types.UUID.Def().rand
 
+const loadEvent = require("../events/load-data")
+const readyEvent = require("../events/ready-system")
+
 const spwanEvent = require("../events/objects/spawn-bullet")
 const createDynamicObject = require("../events/objects/create-dynamic-object")
 const removeDynamicObject = require("../events/objects/remove-dynamic-object")
@@ -18,10 +21,17 @@ class BulletsManager extends Member {
 
     this._bullets = new Map
 
+    this.onEvent(loadEvent, payload => this.load(payload))
+  }
+
+  load({ resources: { bullets } }) {
+    // console.log(bullets)
     this.onEvent(spwanEvent, payload => this.addNewBullet(payload))
     this.onEvent(physicUpdateEvent, payload => this.physicUpdate(payload))
     this.onEvent(outLimitObjectEvent, payload => this.outLimit(payload))
     this.onEvent(destroyEvent, payload => this.destroy(payload))
+
+    this.send(readyEvent, { state: { system: "Bullets" }})
   }
 
   addNewBullet({ state: { direct, position } }) {
