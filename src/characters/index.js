@@ -6,6 +6,7 @@ const readyEvent = require("../events/ready-system")
 
 const connectedPlayerEvent = require("../events/players/connected-player")
 const disconnectedEvent = require("../events/players/disconnected-player")
+const freeSpawnsEvent = require("../events/objects/free-spawns")
 const spawnEvent = require("../events/objects/spawn-character")
 const spawnedEvent = require("../events/objects/ready-spawned")
 const createDynamicObject = require("../events/objects/create-dynamic-object")
@@ -39,6 +40,7 @@ class CharactersManager extends Member {
     this.onEvent(movingEvent, payload => this.moveCharacter(payload))
     this.onEvent(shotActionEvent, payload => this.shotCharacter(payload))
     this.onEvent(destroyEvent, payload => this.destroy(payload))
+    this.onEvent(freeSpawnsEvent, payload => this.freeSpawns(payload))
 
     this.send(readyEvent, { state: { system: "Characters" }})
   }
@@ -56,7 +58,6 @@ class CharactersManager extends Member {
       damage: 100, 
       isApplyDamage: true
     }})
-    this.send(spawnEvent, { state: { uuid: newCharacter.uuid } })
   }
 
   deleteCharactersByPlayer({ state: playerUid }) {
@@ -79,18 +80,47 @@ class CharactersManager extends Member {
     this.send(removeDynamicObject, { state: uuid })
   }
 
+  freeSpawns({ spawns }) {
+    const spawn = spawns[0]
+    if(!spawn)
+      return
+
+    const character = this.notSpawnedCharacters()[0]
+    if(!character)
+      return
+
+    character.spawnUuid = spawn.uuid
+
+    this.send(spawnEvent, { 
+      spawnUuid: spawn.uuid,
+      characterUuid: character.uuid 
+    })
+  }
+
   spawnCharacter({ characterUuid, position }) {
     const characterShape = this._characters.get(characterUuid).spawn({ position }).serialize()
 
-    console.log("Created", characterUuid)
     this.send(createDynamicObject, {
       state: characterShape
     })
   }
 
+  notSpawnedCharacters() {
+    const characters = []
+    for (const [_, character] of this._characters) {
+      if(!character.isSpawned() && !character.spawnUuid)
+        characters.push(character)
+    }
+
+    return characters
+  }
+
   moveCharacter({ state: { playerUuid, direct } }) {
     const characterUuid = this._players.get(playerUuid)
     const character = this._characters.get(characterUuid)
+
+    if(!character.isSpawned())
+      return
 
     character.changeDirection(direct)
 
@@ -102,6 +132,9 @@ class CharactersManager extends Member {
   shotCharacter({ state: { playerUuid, direct } }) {
     const characterUuid = this._players.get(playerUuid)
     const character = this._characters.get(characterUuid)
+
+    if(!character.isSpawned())
+      return
 
     character.changeShotDirect(direct)
 
@@ -142,6 +175,7 @@ class Character {
       height: 340
     }
     this._state = CREATED
+    this.spawnUuid = null
 
     this._groupCollision = "Characters"
   }
@@ -150,6 +184,7 @@ class Character {
     if(this.isSpawned())
       return
   
+    this.spawnUuid = null
     this.changeState(STAND)
     this.speed = 1400
     this.position = { x, y }

@@ -61,6 +61,7 @@ tileMap:
         width: 16
       spawns:
         - tileId: 41
+          calldown: 10
       walls:
         - tileId: 61
           hp: 30

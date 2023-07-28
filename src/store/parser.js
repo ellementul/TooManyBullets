@@ -162,8 +162,14 @@ class Parser {
       tile.half = wall.half
     }
 
-    if(spawns.has(tileId))
+    if(spawns.has(tileId)) {
+      const spawn = spawns.get(tileId)
       tile.isSpawn = true
+      tile.spawn = {
+        calldown: (spawn.calldown || 0) * 1000
+      }
+    }
+      
 
     return tile
   }

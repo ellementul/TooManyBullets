@@ -74,23 +74,22 @@ class Tiles extends Member {
     }})
   }
 
-  addSpawn(spawn) {
-    const { 
-      position: {
-        column,
-        row
-      },
-      tilesetRect: {
-        width,
-        height
-      }
-    } = spawn
-    this.send(addSpwanEvent, { state: {
-      position: {
-        x: column * width,
-        y: row * height,
-      }
-    }})
+  addSpawn({ 
+    position: {
+      column,
+      row
+    },
+    tilesetRect: {
+      width,
+      height
+    },
+    spawn
+  }) {
+    spawn.position = {
+      x: column * width,
+      y: row * height,
+    }
+    this.send(addSpwanEvent, { spawn })
   }
 
 
