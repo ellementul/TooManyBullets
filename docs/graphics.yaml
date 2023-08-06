@@ -1,0 +1,54 @@
+- Свет падает из нижненего правого угла карты
+- Свет теплый
+- Тень холодная
+- Sky colors:
+  - '#c28362'
+  - '#d98c64'
+  - '#f6a36e'
+  - '#f8b388'
+  - '#fed0ac'
+  - '#ffdab8'
+  - '#d2a991'
+  - '#eab396'
+  - '#edb799'
+  - '#fdc9ad'
+  - '#ffd2b6'
+  - '#fed9c1'
+  - HSV:
+    H:
+      min: 12
+      max: 31
+    S:
+      min: 15
+      max: 55
+    V:
+      min: 85
+      max: 100
+  - Shema: https://colorscheme.ru/#0k11BsOsOK-K-
+- Ceramic plite: https://colorscheme.ru/#0A11B5lm6--dJ
+- Bob colors:
+  - '#171b1d'
+  - '#2c2120'
+  - '#303034'
+  - '#363636'
+  - '#816e65'
+  - '#927c77'
+  - '#9b613a'
+  - '#d8beb0'
+  - '#a75531'
+  - '#e5793c'
+  - '#f3d8ca'
+  - '#f7d8cc'
+  - '#f5ebde'
+  - HSV:
+    H:
+      min: 12
+      max: 31
+    S:
+      min: 9
+      max: 73
+    V:
+      min: 11
+      max: 96
+  - Shema: https://colorscheme.ru/#0k11BsOsOK-K-
+  
