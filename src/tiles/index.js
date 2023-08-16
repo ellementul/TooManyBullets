@@ -110,7 +110,7 @@ class Tiles extends Member {
 
   updateOutWalls() {
     const { added } = this.grounds.plan.getCellsOut()
-    added.forEach(outWall => this.addOutWall(outWall))
+    // added.forEach(outWall => this.addOutWall(outWall))
     this.grounds.plan.clearCellsOut()
   }
 
