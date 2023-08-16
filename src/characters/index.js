@@ -16,6 +16,7 @@ const createHPEvent = require("../events/objects/create-hp")
 const deleteHPEvent = require("../events/objects/remove-hp")
 const destroyEvent = require("../events/objects/destroyed-object")
 const physicUpdateEvent = require("../events/objects/update-physic")
+const updateObjectsTilesCoordinatesEvent = require("../events/objects/update-objects-tiles-coordintes")
 const updateEvent = require("../events/objects/update-characters")
 const movingEvent = require("../events/players/moving-direct")
 const shotActionEvent = require("../events/players/shot-action")
@@ -37,6 +38,7 @@ class CharactersManager extends Member {
     this.onEvent(disconnectedEvent, payload => this.deleteCharactersByPlayer(payload))
     this.onEvent(spawnedEvent, payload => this.spawnCharacter(payload))
     this.onEvent(physicUpdateEvent, payload => this.physicUpdate(payload))
+    this.onEvent(updateObjectsTilesCoordinatesEvent, payload => this.updateTilesCoordinates(payload))
     this.onEvent(movingEvent, payload => this.moveCharacter(payload))
     this.onEvent(shotActionEvent, payload => this.shotCharacter(payload))
     this.onEvent(destroyEvent, payload => this.destroy(payload))
@@ -156,6 +158,20 @@ class CharactersManager extends Member {
     this.send(updateEvent, {
       state: characters
     })
+  }
+
+  updateTilesCoordinates({ state: tilesPosition }) {
+    for (const uuid in tilesPosition) {
+
+      if(!this._characters.has(uuid)) continue
+
+      const character = this._characters.get(uuid)
+
+      if(!character.isSpawned()) continue
+
+      if(!tilesPosition[uuid].isOnGround)
+        console.log("Falling!!!!!!!!")
+    }
   }
 }
 

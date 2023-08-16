@@ -9,6 +9,7 @@ const addSpwanEvent = require("../events/objects/add-spawn")
 const createWallsEvent = require("../events/objects/create-walls-object")
 const removeWallsEvent = require("../events/objects/remove-walls-object")
 const physicUpdateEvent = require("../events/objects/update-physic")
+const updateObjectsTilesCoordintesEvent = require("../events/objects/update-objects-tiles-coordintes")
 const createHPEvent = require("../events/objects/create-hp")
 const deleteHPEvent = require("../events/objects/remove-hp")
 const destroyEvent = require("../events/objects/destroyed-object")
@@ -113,10 +114,34 @@ class Tiles extends Member {
     this.grounds.plan.clearCellsOut()
   }
 
-  physicUpdated() {
+  physicUpdated({ state: objects }) {
+    
+    this.updateTilesCoordinteObjects(objects)
+
     this.send(updateEvent, {
       state: this.serialize()
     })
+  }
+
+  updateTilesCoordinteObjects(objects) {
+    const tilesCoordinteObjects = {}
+    for (const key in objects) {
+      tilesCoordinteObjects[key] = this.getTilesCoordinate(objects[key])
+      tilesCoordinteObjects[key].isOnGround = !!this.grounds.plan.get(tilesCoordinteObjects[key]).uuid
+    }
+
+    updateObjectsTilesCoordintesEvent
+    this.send(updateObjectsTilesCoordintesEvent, {
+      state: tilesCoordinteObjects
+    })
+  }
+
+  getTilesCoordinate({ x, y }) {
+    const { height, width } = this.grounds.tileSize
+    return {
+      row: Math.floor(x / width),
+      column: Math.floor(y / height)
+    }
   }
 
   serialize() {
