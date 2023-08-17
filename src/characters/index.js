@@ -14,7 +14,7 @@ const updateDynamicObject = require("../events/objects/update-dynamic-object")
 const removeDynamicObject = require("../events/objects/remove-dynamic-object")
 const createHPEvent = require("../events/objects/create-hp")
 const deleteHPEvent = require("../events/objects/remove-hp")
-const destroyEvent = require("../events/objects/destroyed-object")
+const killedEvent = require("../events/objects/destroyed-object")
 const physicUpdateEvent = require("../events/objects/update-physic")
 const updateObjectsTilesCoordinatesEvent = require("../events/objects/update-objects-tiles-coordintes")
 const updateEvent = require("../events/objects/update-characters")
@@ -41,7 +41,7 @@ class CharactersManager extends Member {
     this.onEvent(updateObjectsTilesCoordinatesEvent, payload => this.updateTilesCoordinates(payload))
     this.onEvent(movingEvent, payload => this.moveCharacter(payload))
     this.onEvent(shotActionEvent, payload => this.shotCharacter(payload))
-    this.onEvent(destroyEvent, payload => this.destroy(payload))
+    this.onEvent(killedEvent, payload => this.killed(payload))
     this.onEvent(freeSpawnsEvent, payload => this.freeSpawns(payload))
 
     this.send(readyEvent, { state: { system: "Characters" }})
@@ -70,12 +70,16 @@ class CharactersManager extends Member {
     this.deleteCharacter(characterUuid)
   }
 
-  destroy({ state: uuid }) {
-    if(this._characters.has(uuid)) {
-      const playerUid = this._characters.get(uuid).playerUid
+  killed({ state: uuid }) {
+    if(!this._characters.has(uuid)) return
+
+    const character = this._characters.get(uuid)
+    character.onDestroy((uuid) => {
       this.deleteCharacter(uuid)
-      this.addNewCharacter({ state: playerUid })
-    }
+      this.addNewCharacter({ state: character.playerUid })
+    })
+
+    character.killed()
   }
 
   deleteCharacter(uuid) {
@@ -151,10 +155,10 @@ class CharactersManager extends Member {
     const characters = []
     
     for (const [uuid, character] of this._characters) {
-      if(character.isSpawned()) {
+      if(character.isSpawned())
         character.position = positions[uuid]
-        characters.push(character.serialize())
-      }
+
+      characters.push(character.serialize())
     }
 
     this.send(updateEvent, {
@@ -206,6 +210,7 @@ class Character {
     this.uuid = genUuid()
     this.playerUid = null
     this.speed = 0
+    this.position = { x: 0, y: 0 }
     this.velocity = { x: 0, y: 0 }
     this.shotDirect = { x: 1, y: 0 }
     this.box = {
@@ -222,6 +227,10 @@ class Character {
     this.playerUid = playerUid
   }
 
+  onDestroy(callback) {
+    this.destroyCallback = callback
+  }
+
   setState(state) {
     if(this._state == state)
       return
@@ -231,10 +240,15 @@ class Character {
 
     if(state === SPAWNED && this._state !== WAIT_SPAWN)
       return
+
+    if(state === DESTROYED && this._state !== SPAWNED)
+      return
       
     this._state = state
     return true
   }
+
+  
 
   isCreatedForSpawn() {
     return this._state.stateKey === CREATED.stateKey
@@ -263,6 +277,16 @@ class Character {
     this.position = { x, y }
 
     return this
+  }
+
+  killed() {
+    if(!this.setState(DESTROYED))
+      return
+
+    if(this.destroyCallback) 
+      setTimeout(() => {
+        this.destroyCallback(this.uuid)
+      }, 3000)
   }
 
   getSpawnBulletPostitonAndDirect() {
@@ -326,6 +350,7 @@ class Character {
     return {
       uuid: this.uuid,
       playerUuid: this.playerUid,
+      state: this._state.animState,
       shape: "Box",
       box: { width, height },
       position: { x, y },
