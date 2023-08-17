@@ -48,11 +48,13 @@ class CharactersManager extends Member {
   }
 
   addNewCharacter({ state: playerUid }) {
-    const newCharacter = new Character(playerUid)
+    const newCharacter = new Character
     this._characters.set(newCharacter.uuid, newCharacter)
 
-    if(playerUid)
+    if(playerUid) {
+      newCharacter.setOwnPlayer(playerUid)
       this._players.set(playerUid, newCharacter.uuid)
+    }
 
     this.send(createHPEvent,  { state:  { 
       uuid: newCharacter.uuid,
@@ -91,7 +93,7 @@ class CharactersManager extends Member {
     if(!character)
       return
 
-    character.spawnUuid = spawn.uuid
+    character.waitSpawn(spawn.uuid)
 
     this.send(spawnEvent, { 
       spawnUuid: spawn.uuid,
@@ -110,7 +112,7 @@ class CharactersManager extends Member {
   notSpawnedCharacters() {
     const characters = []
     for (const [_, character] of this._characters) {
-      if(!character.isSpawned() && !character.spawnUuid)
+      if(character.isCreatedForSpawn())
         characters.push(character)
     }
 
@@ -175,14 +177,34 @@ class CharactersManager extends Member {
   }
 }
 
-const CREATED = "Created"
+const HIDDEN = "Hidden"
 const STAND = "Stay"
-const WALK = "Walk"
+const KILLED = "Killed"
+
+const CREATED = {
+  stateKey: Symbol(),
+  animState: HIDDEN
+}
+
+const WAIT_SPAWN = {
+  stateKey: Symbol(),
+  animState: HIDDEN
+}
+
+const SPAWNED = {
+  stateKey: Symbol(),
+  animState: STAND
+}
+
+const DESTROYED = { 
+  stateKey: Symbol(),
+  animState: KILLED
+}
 
 class Character {
-  constructor(playerUid = null) {
+  constructor() {
     this.uuid = genUuid()
-    this.playerUid = playerUid
+    this.playerUid = null
     this.speed = 0
     this.velocity = { x: 0, y: 0 }
     this.shotDirect = { x: 1, y: 0 }
@@ -190,18 +212,53 @@ class Character {
       width: 100,
       height: 340
     }
-    this._state = CREATED
+    this.setState(CREATED)
     this.spawnUuid = null
 
     this._groupCollision = "Characters"
   }
 
-  spawn({ position: { x, y } }) {
-    if(this.isSpawned())
+  setOwnPlayer(playerUid) {
+    this.playerUid = playerUid
+  }
+
+  setState(state) {
+    if(this._state == state)
       return
-  
-    this.spawnUuid = null
-    this.changeState(STAND)
+
+    if(state === WAIT_SPAWN && this._state !== CREATED)
+      return
+
+    if(state === SPAWNED && this._state !== WAIT_SPAWN)
+      return
+      
+    this._state = state
+    return true
+  }
+
+  isCreatedForSpawn() {
+    return this._state.stateKey === CREATED.stateKey
+  }
+
+  isWaitSpawn() {
+    return this._state.stateKey === WAIT_SPAWN.stateKey
+  }
+
+  isSpawned() {
+    return this._state.stateKey === SPAWNED.stateKey
+  }
+
+  waitSpawn(spawnUuid) {
+    if(!this.setState(WAIT_SPAWN))
+      return
+
+    this.spawnUuid = spawnUuid
+  }
+
+  spawn({ position: { x, y } }) {
+    if(!this.setState(SPAWNED))
+      return
+    
     this.speed = 1400
     this.position = { x, y }
 
@@ -261,29 +318,6 @@ class Character {
       x: direct.x * this.speed, 
       y: direct.y * this.speed
     }
-
-    if(this.velocity.x === 0 && this.velocity.y === 0)
-      this.stop()
-    else
-      this.walking()
-  }
-
-  walking() {
-    if(this._state !== WALK)
-      this.changeState(WALK)
-  }
-
-  stop() {
-    if(this._state !== STAND)
-      this.changeState(STAND)
-  }
-
-  changeState(state) {
-    this._state = state
-  }
-
-  isSpawned() {
-    return this._state === STAND || this._state === WALK
   }
 
   serialize() {
