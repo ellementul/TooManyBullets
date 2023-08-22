@@ -82,6 +82,15 @@ class CharactersManager extends Member {
     character.killed()
   }
 
+  falling(character) {
+    character.onDestroy((uuid) => {
+      this.deleteCharacter(uuid)
+      this.addNewCharacter({ state: character.playerUid })
+    })
+
+    character.falling()
+  }
+
   deleteCharacter(uuid) {
     this._characters.delete(uuid)
     this.send(deleteHPEvent, { state: uuid })
@@ -176,7 +185,7 @@ class CharactersManager extends Member {
       if(!character.isSpawned()) continue
 
       if(!tilesPosition[uuid].isOnGround)
-        console.log("Falling!!!!!!!!")
+        this.falling(character)
     }
   }
 }
@@ -184,6 +193,7 @@ class CharactersManager extends Member {
 const HIDDEN = "Hidden"
 const STAND = "Stay"
 const KILLED = "Killed"
+const FALLING = "Falling"
 
 const CREATED = {
   stateKey: Symbol(),
@@ -203,6 +213,11 @@ const SPAWNED = {
 const DESTROYED = { 
   stateKey: Symbol(),
   animState: KILLED
+}
+
+const FALLEN = { 
+  stateKey: Symbol(),
+  animState: FALLING
 }
 
 class Character {
@@ -281,6 +296,16 @@ class Character {
 
   killed() {
     if(!this.setState(DESTROYED))
+      return
+
+    if(this.destroyCallback) 
+      setTimeout(() => {
+        this.destroyCallback(this.uuid)
+      }, 3000)
+  }
+
+  falling() {
+    if(!this.setState(FALLEN))
       return
 
     if(this.destroyCallback) 

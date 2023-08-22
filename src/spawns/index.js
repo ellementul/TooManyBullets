@@ -11,10 +11,11 @@ class Spawns extends Member {
     super()
 
     this._spawns = new Map
+    this.queue = []
     
     this.onEvent(addEvent, payload => this.addSpawn(payload))
     this.onEvent(time, () => this.checkSpawns())
-    this.onEvent(spawnEvent, payload => this.spawnCharacter(payload))
+    this.onEvent(spawnEvent, payload => this.setupSpawningCharacter(payload))
   }
 
   addSpawn({ spawn }) {
@@ -37,12 +38,21 @@ class Spawns extends Member {
     if(this._spawns.size === 0)
       return
     
+    this.spawnCharacters()
+
     this.send(freeSpawnsEvent, {
       spawns: this.getFreeSpawns()
     })
   }
   
-  spawnCharacter({ spawnUuid, characterUuid}) {
+  setupSpawningCharacter({ spawnUuid, characterUuid}) {
+    this.queue.push( {spawnUuid, characterUuid })
+  }
+
+  spawnCharacters() {
+    if(this.queue.length == 0) return
+
+    const { spawnUuid, characterUuid} = this.queue.shift()
 
     const spawn = this._spawns.get(spawnUuid)
     const position = {
@@ -50,11 +60,11 @@ class Spawns extends Member {
       y: spawn.position.y
     }
 
-    this.setCalldown(spawn)
+    this.setCooldawn(spawn)
     this.send(readyEvent, { spawnUuid, characterUuid, position })
   }
 
-  setCalldown(spawn){
+  setCooldawn(spawn){
     spawn.isFree = false
     setTimeout(() => spawn.isFree = true, spawn.calldown || 60*1000)
   }
