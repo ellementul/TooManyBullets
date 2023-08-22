@@ -232,6 +232,10 @@ class Character {
       width: 100,
       height: 340
     }
+    this.pivot = {
+      x: 50,
+      y: 340
+    }
     this.setState(CREATED)
     this.spawnUuid = null
 
@@ -379,6 +383,7 @@ class Character {
       shape: "Box",
       box: { width, height },
       position: { x, y },
+      pivot: { ...this.pivot},
       velocity: {
         x: this.velocity.x,
         y: this.velocity.y

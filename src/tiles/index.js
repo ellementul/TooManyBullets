@@ -130,17 +130,16 @@ class Tiles extends Member {
       tilesCoordinteObjects[key].isOnGround = !!this.grounds.plan.get(tilesCoordinteObjects[key]).uuid
     }
 
-    updateObjectsTilesCoordintesEvent
     this.send(updateObjectsTilesCoordintesEvent, {
       state: tilesCoordinteObjects
     })
   }
 
-  getTilesCoordinate({ x, y }) {
+  getTilesCoordinate({ x, y, pivot, vx, vy }) {
     const { height, width } = this.grounds.tileSize
     return {
-      row: Math.floor(x / width),
-      column: Math.floor(y / height)
+      row: Math.floor((x + pivot.x - (vx * 0.05 )) / width),
+      column: Math.floor((y + pivot.y - (vy * 0.05 )) / height)
     }
   }
 

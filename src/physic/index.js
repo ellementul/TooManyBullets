@@ -68,12 +68,13 @@ class Physic extends Member {
     
   }
 
-  createDynamicBox({ uuid, position, box: { width, height }, velocity, groupCollision }) {
+  createDynamicBox({ uuid, position, pivot, box: { width, height }, velocity, groupCollision }) {
     const options = { isStatic: false }
     const box = this.collisionSystem.createBox(position, width, height, options)
     box.uuid = uuid
     box.velocity = velocity
     box.groupCollision = groupCollision
+    box.setOffset(pivot || { x: width / 2, y: height / 2 })
     
     this._dynamicObjects.set(uuid, box)
   }
@@ -158,7 +159,10 @@ class Physic extends Member {
     for (const [uuid, object] of this._dynamicObjects) {
       objectsPositions[uuid] = {
         x: object.x,
-        y: object.y
+        y: object.y,
+        pivot: { ...object.offset },
+        vx: object.velocity.x,
+        vy: object.velocity.y
       }
     }
 
