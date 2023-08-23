@@ -360,6 +360,7 @@ class Character {
       x: this.position.x + this.box.width / 2,
       y: this.position.y + this.box.height / 2
     }
+
     return {
       direct: this.shotDirect,
       position: {

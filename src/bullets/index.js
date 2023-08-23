@@ -88,15 +88,7 @@ class Bullet {
       height: 50
     }
 
-    const offsetBullet = {
-      x:  Math.abs(direct.x) > Math.abs(direct.y) ? Math.sign(direct.x) : direct.x,
-      y:  Math.abs(direct.y) > Math.abs(direct.x) ? Math.sign(direct.y) : direct.y,
-    }
-
-    this.position = {
-      x: position.x + ((offsetBullet.x - 1) / 2) * this.box.width,
-      y: position.y + ((offsetBullet.y - 1) / 2) * this.box.height
-    }
+    this.position = position
     this.speed = 2000
     this.velocity = {
       x: direct.x * this.speed,
