@@ -34,12 +34,13 @@ class BulletsManager extends Member {
     this.send(readyEvent, { state: { system: "Bullets" }})
   }
 
-  addNewBullet({ state: { direct, position } }) {
+  addNewBullet({ state: { parentUuid, direct, position } }) {
     const bullet = new Bullet({ direct, position })
     this._bullets.set(bullet.uuid, bullet)
 
     this.send(createHPEvent,  { state:  { 
       uuid: bullet.uuid,
+      parentUuid: parentUuid,
       hp: 5, 
       damage: 10, 
       isApplyDamage: true
@@ -83,8 +84,8 @@ class Bullet {
   constructor({ direct, position }) {
     this.uuid = genUuid()
     this.box = { 
-      width: 128, 
-      height: 128 
+      width: 50, 
+      height: 50
     }
 
     const offsetBullet = {

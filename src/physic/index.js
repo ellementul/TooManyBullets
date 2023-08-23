@@ -74,7 +74,7 @@ class Physic extends Member {
     box.uuid = uuid
     box.velocity = velocity
     box.groupCollision = groupCollision
-    box.setOffset(pivot || { x: width / 2, y: height / 2 })
+    box.pivot = pivot || { x: width / 2, y: height / 2 }
     
     this._dynamicObjects.set(uuid, box)
   }
@@ -160,7 +160,7 @@ class Physic extends Member {
       objectsPositions[uuid] = {
         x: object.x,
         y: object.y,
-        pivot: { ...object.offset },
+        pivot: { ...object.pivot },
         vx: object.velocity.x,
         vy: object.velocity.y
       }

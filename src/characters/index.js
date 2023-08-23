@@ -6,20 +6,27 @@ const readyEvent = require("../events/ready-system")
 
 const connectedPlayerEvent = require("../events/players/connected-player")
 const disconnectedEvent = require("../events/players/disconnected-player")
+
 const freeSpawnsEvent = require("../events/objects/free-spawns")
 const spawnEvent = require("../events/objects/spawn-character")
 const spawnedEvent = require("../events/objects/ready-spawned")
+
 const createDynamicObject = require("../events/objects/create-dynamic-object")
 const updateDynamicObject = require("../events/objects/update-dynamic-object")
 const removeDynamicObject = require("../events/objects/remove-dynamic-object")
+
 const createHPEvent = require("../events/objects/create-hp")
 const deleteHPEvent = require("../events/objects/remove-hp")
 const killedEvent = require("../events/objects/destroyed-object")
+
 const physicUpdateEvent = require("../events/objects/update-physic")
 const updateObjectsTilesCoordinatesEvent = require("../events/objects/update-objects-tiles-coordintes")
 const updateEvent = require("../events/objects/update-characters")
-const movingEvent = require("../events/players/moving-direct")
+
+const movingEvent = require("../events/players/moving-direct-change")
+const shotDirectChangeEvent = require("../events/players/shotting-direct-change")
 const shotActionEvent = require("../events/players/shot-action")
+
 const spwanBulletEvent = require("../events/objects/spawn-bullet")
 
 class CharactersManager extends Member {
@@ -36,13 +43,20 @@ class CharactersManager extends Member {
     // console.log(characters)
     this.onEvent(connectedPlayerEvent, payload => this.addNewCharacter(payload))
     this.onEvent(disconnectedEvent, payload => this.deleteCharactersByPlayer(payload))
+
+    this.onEvent(freeSpawnsEvent, payload => this.freeSpawns(payload))
     this.onEvent(spawnedEvent, payload => this.spawnCharacter(payload))
+    
+
     this.onEvent(physicUpdateEvent, payload => this.physicUpdate(payload))
     this.onEvent(updateObjectsTilesCoordinatesEvent, payload => this.updateTilesCoordinates(payload))
+
     this.onEvent(movingEvent, payload => this.moveCharacter(payload))
+    this.onEvent(shotDirectChangeEvent, payload => this.setShottingDirect(payload))
     this.onEvent(shotActionEvent, payload => this.shotCharacter(payload))
+
     this.onEvent(killedEvent, payload => this.killed(payload))
-    this.onEvent(freeSpawnsEvent, payload => this.freeSpawns(payload))
+    
 
     this.send(readyEvent, { state: { system: "Characters" }})
   }
@@ -132,7 +146,10 @@ class CharactersManager extends Member {
     return characters
   }
 
-  moveCharacter({ state: { playerUuid, direct } }) {
+  moveCharacter({ playerUuid, state: direct }) {
+    if(!this._players.has(playerUuid))
+      return
+
     const characterUuid = this._players.get(playerUuid)
     const character = this._characters.get(characterUuid)
 
@@ -146,7 +163,10 @@ class CharactersManager extends Member {
     })
   }
 
-  shotCharacter({ state: { playerUuid, direct } }) {
+  setShottingDirect({ playerUuid, state: direct }) {
+    if(!this._players.has(playerUuid))
+      return
+
     const characterUuid = this._players.get(playerUuid)
     const character = this._characters.get(characterUuid)
 
@@ -154,9 +174,26 @@ class CharactersManager extends Member {
       return
 
     character.changeShotDirect(direct)
+  }
+
+  shotCharacter({ playerUuid, state: isShotting }) {
+    if(!this._players.has(playerUuid))
+      return
+
+    const characterUuid = this._players.get(playerUuid)
+    const character = this._characters.get(characterUuid)
+
+    if(!character.isSpawned())
+      return
+
+    if(!isShotting)
+      return
 
     this.send(spwanBulletEvent, {
-      state: character.getSpawnBulletPostitonAndDirect()
+      state: {
+        parentUuid: characterUuid,
+        ...character.getSpawnBulletPostitonAndDirect()
+      }
     })
   }
 
@@ -323,15 +360,11 @@ class Character {
       x: this.position.x + this.box.width / 2,
       y: this.position.y + this.box.height / 2
     }
-    const offsetBullet = {
-      x:  Math.abs(this.shotDirect.x) > Math.abs(this.shotDirect.y) ? Math.sign(this.shotDirect.x) : this.shotDirect.x,
-      y:  Math.abs(this.shotDirect.y) > Math.abs(this.shotDirect.x) ? Math.sign(this.shotDirect.y) : this.shotDirect.y,
-    }
     return {
       direct: this.shotDirect,
       position: {
-        x: characterCenter.x + offsetBullet.x * (this.box.width / 2),
-        y: characterCenter.y + offsetBullet.y * (this.box.height / 2)
+        x: characterCenter.x,
+        y: characterCenter.y
       }
     }
   }
