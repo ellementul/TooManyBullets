@@ -93,7 +93,7 @@ class Bullet {
       y: position.y - this.box.height / 2
     }
     
-    this.speed = 1500
+    this.speed = 1700
     this.velocity = {
       x: direct.x * this.speed,
       y: direct.y * this.speed
