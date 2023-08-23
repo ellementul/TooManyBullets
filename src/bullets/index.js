@@ -55,7 +55,7 @@ class BulletsManager extends Member {
     
     for (const [uuid, bullet] of this._bullets) {
       bullet.position = positions[uuid]
-      bullets.push(bullet.serialize())
+      bullets.push(bullet.draw())
     }
 
     this.send(updateEvent, {
@@ -88,8 +88,12 @@ class Bullet {
       height: 50
     }
 
-    this.position = position
-    this.speed = 2000
+    this.position = {
+      x: position.x - this.box.width / 2,
+      y: position.y - this.box.height / 2
+    }
+    
+    this.speed = 1500
     this.velocity = {
       x: direct.x * this.speed,
       y: direct.y * this.speed
@@ -97,14 +101,28 @@ class Bullet {
     this._groupCollision = "Bullets"
   }
 
+  getCenterPosition() {
+    return {
+      x: this.position.x + this.box.width / 2,
+      y: this.position.y + this.box.height / 2
+    }
+  }
+
   serialize() {
     return {
       uuid: this.uuid,
       shape: "Box",
       box: this.box,
-      position: this.position,
+      position: {...this.position},
       velocity: this.velocity,
       groupCollision: this._groupCollision
+    }
+  }
+
+  draw() {
+    return {
+      uuid: this.uuid,
+      position: this.getCenterPosition(),
     }
   }
 }

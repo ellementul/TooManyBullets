@@ -204,7 +204,7 @@ class CharactersManager extends Member {
       if(character.isSpawned())
         character.position = positions[uuid]
 
-      characters.push(character.serialize())
+      characters.push(character.draw())
     }
 
     this.send(updateEvent, {
@@ -266,7 +266,7 @@ class Character {
     this.velocity = { x: 0, y: 0 }
     this.shotDirect = { x: 1, y: 0 }
     this.box = {
-      width: 100,
+      width: 115,
       height: 340
     }
     this.pivot = {
@@ -355,17 +355,36 @@ class Character {
       }, 3000)
   }
 
-  getSpawnBulletPostitonAndDirect() {
-    const characterCenter = {
+  getCenterPosition() {
+    return {
       x: this.position.x + this.box.width / 2,
       y: this.position.y + this.box.height / 2
+    }
+  }
+
+  getSpawnBulletPostitonAndDirect() {
+    const characterCenter = this.getCenterPosition()
+    
+    const turn = (point, direct) => ({
+      x: point.x * direct.x - point.y * direct.y * Math.sign(direct.x),
+      y: point.x * direct.y + point.y * direct.x * Math.sign(direct.x)
+    })
+
+    const bulletShift = turn({
+      x: 100,
+      y: -25
+    }, this.shotDirect)
+
+    const gunShift = {
+      x: -25,
+      y: 25
     }
 
     return {
       direct: this.shotDirect,
       position: {
-        x: characterCenter.x,
-        y: characterCenter.y
+        x: characterCenter.x + bulletShift.x + gunShift.x * Math.sign(this.shotDirect.x),
+        y: characterCenter.y + bulletShift.y + gunShift.y
       }
     }
   }
@@ -409,20 +428,26 @@ class Character {
 
   serialize() {
     const { width, height } = this.box
-    const { x, y } = this.position
     return {
       uuid: this.uuid,
-      playerUuid: this.playerUid,
-      state: this._state.animState,
       shape: "Box",
       box: { width, height },
-      position: { x, y },
+      position: { ...this.position},
       pivot: { ...this.pivot},
       velocity: {
         x: this.velocity.x,
         y: this.velocity.y
       },
       groupCollision: this._groupCollision
+    }
+  }
+
+  draw() {
+    return {
+      uuid: this.uuid,
+      playerUuid: this.playerUid,
+      state: this._state.animState,
+      position: this.getCenterPosition(),
     }
   }
 }
