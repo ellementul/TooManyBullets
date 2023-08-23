@@ -186,15 +186,17 @@ class CharactersManager extends Member {
     if(!character.isSpawned())
       return
 
-    if(!isShotting)
-      return
-
-    this.send(spwanBulletEvent, {
-      state: {
-        parentUuid: characterUuid,
-        ...character.getSpawnBulletPostitonAndDirect()
-      }
-    })
+    if(isShotting)
+      character.setShotting(() => {
+        this.send(spwanBulletEvent, {
+          state: {
+            parentUuid: characterUuid,
+            ...character.getSpawnBulletPostitonAndDirect()
+          }
+        })
+      })
+    else
+      character.delShotting()
   }
 
   physicUpdate({ state: positions }) {
@@ -265,6 +267,7 @@ class Character {
     this.position = { x: 0, y: 0 }
     this.velocity = { x: 0, y: 0 }
     this.shotDirect = { x: 1, y: 0 }
+    this.isShotting = false
     this.box = {
       width: 115,
       height: 340
@@ -304,6 +307,20 @@ class Character {
     return true
   }
 
+  setShotting(cb) {
+    if(this.isShotting) return
+
+    this.isShotting = true
+    this.shottingTimer = setInterval(cb, 500)
+    cb() //first shot
+  }
+
+  delShotting() {
+    if(!this.isShotting) return
+
+    this.isShotting = false
+    clearInterval(this.shottingTimer)
+  }
   
 
   isCreatedForSpawn() {
@@ -343,6 +360,8 @@ class Character {
       setTimeout(() => {
         this.destroyCallback(this.uuid)
       }, 3000)
+
+    this.delShotting()
   }
 
   falling() {
@@ -353,6 +372,8 @@ class Character {
       setTimeout(() => {
         this.destroyCallback(this.uuid)
       }, 3000)
+
+    this.delShotting()
   }
 
   getCenterPosition() {
