@@ -8,13 +8,14 @@ const updateCountEvent = require("../events/players/update-players-count")
 const pingEvent = require("../events/players/ping-players")
 const pongEvent = require("../events/players/pong-players")
 
-let timeout = 0
 const MSTIMELIMIT = 2000
 class PlayersManager extends Member {
   constructor() {
     super()
 
     this._players = new Map
+    this.timeout = 0
+    this.timePing = 0
 
     this.onEvent(startSessionEvent, () => this.start())
   }
@@ -34,7 +35,8 @@ class PlayersManager extends Member {
 
   connectPlayer(playerUuid) {
     this._players.set(playerUuid, {
-      pong: false
+      pong: false,
+      deltaTime: 0
     })
 
     this.send(connectedEvent, { state: playerUuid })
@@ -42,13 +44,16 @@ class PlayersManager extends Member {
   }
 
   tick({ state: { mstime }}) {
-    if(mstime - timeout > MSTIMELIMIT) {
-      timeout = mstime
+    this.timePing = mstime
+
+    if(this.checkPlayersPong()) {
+      this.timeout = this.timePing
+      this.clearPongs()
+      this.send(pingEvent)
+    } else if(this.timePing - this.timeout > MSTIMELIMIT) {
+      this.timeout = this.timePing
       this.runOutTimeout()
-    }
-    else {
-      this.checkPlayersPong()
-    }
+    } 
   }
 
   checkPlayersPong() {
@@ -57,10 +62,7 @@ class PlayersManager extends Member {
       allPong &= player.pong
     }
 
-    if(allPong) {
-      this.clearPongs()
-      this.send(pingEvent)
-    }
+    return allPong
   }
 
   clearPongs() {
