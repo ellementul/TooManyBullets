@@ -10,6 +10,10 @@ const createWallsEvent = require("../events/objects/create-walls-object")
 const removeWallsEvent = require("../events/objects/remove-walls-object")
 const physicUpdateEvent = require("../events/objects/update-physic")
 const updateObjectsTilesCoordintesEvent = require("../events/objects/update-objects-tiles-coordintes")
+
+const updateWallsCount = require('../events/objects/update-walls-count')
+const updatePlatformsCount = require('../events/objects/update-platforms-count')
+
 const createHPEvent = require("../events/objects/create-hp")
 const deleteHPEvent = require("../events/objects/remove-hp")
 const destroyEvent = require("../events/objects/destroyed-object")
@@ -120,6 +124,14 @@ class Tiles extends Member {
 
     this.send(updateEvent, {
       state: this.serialize()
+    })
+
+    this.send(updateWallsCount, {
+      state: this.walls.size
+    })
+
+    this.send(updatePlatformsCount, {
+      state: this.grounds.size
     })
   }
 

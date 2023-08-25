@@ -22,6 +22,7 @@ const killedEvent = require("../events/objects/destroyed-object")
 const physicUpdateEvent = require("../events/objects/update-physic")
 const updateObjectsTilesCoordinatesEvent = require("../events/objects/update-objects-tiles-coordintes")
 const updateEvent = require("../events/objects/update-characters")
+const updateKillsEvent = require("../events/players/update-kills-count")
 
 const movingEvent = require("../events/players/moving-direct-change")
 const shotDirectChangeEvent = require("../events/players/shotting-direct-change")
@@ -35,6 +36,7 @@ class CharactersManager extends Member {
 
     this._characters = new Map
     this._players = new Map
+    this.killCount = 0
 
     this.onEvent(loadEvent, payload => this.load(payload))
   }
@@ -94,6 +96,7 @@ class CharactersManager extends Member {
     })
 
     character.killed()
+    this.killCount++
   }
 
   falling(character) {
@@ -211,6 +214,10 @@ class CharactersManager extends Member {
 
     this.send(updateEvent, {
       state: characters
+    })
+
+    this.send(updateKillsEvent, {
+      state: this.killCount
     })
   }
 

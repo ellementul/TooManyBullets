@@ -40,7 +40,6 @@ class PlayersManager extends Member {
     })
 
     this.send(connectedEvent, { state: playerUuid })
-    this.send(updateCountEvent, { state: this._players.size })
   }
 
   tick({ state: { mstime }}) {
@@ -50,10 +49,14 @@ class PlayersManager extends Member {
       this.timeout = this.timePing
       this.clearPongs()
       this.send(pingEvent)
+
+      this.send(updateCountEvent, { state: this._players.size })
     } else if(this.timePing - this.timeout > MSTIMELIMIT) {
       this.timeout = this.timePing
       this.runOutTimeout()
-    } 
+      
+      this.send(updateCountEvent, { state: this._players.size })
+    }
   }
 
   checkPlayersPong() {

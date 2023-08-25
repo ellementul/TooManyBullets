@@ -18,6 +18,15 @@ class ChunksList extends Map {
     this.set(this.current.uuid, this.current)
   }
 
+  get size() {
+    let sum = 0
+    for (const [_, chunk] of this) {
+      sum += chunk.size
+    }
+
+    return sum
+  }
+
   add(tile) {
     const chunk = this.getEmptyChunck()
     chunk.add(tile)
