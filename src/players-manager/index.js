@@ -5,6 +5,7 @@ const readyEvent = require("../events/ready-players-manager")
 const connectedEvent = require("../events/players/connected-player")
 const disconnectedEvent = require("../events/players/disconnected-player")
 const updateCountEvent = require("../events/players/update-players-count")
+const update = require("../events/players/update-players-list")
 const pingEvent = require("../events/players/ping-players")
 const pongEvent = require("../events/players/pong-players")
 
@@ -40,6 +41,8 @@ class PlayersManager extends Member {
     })
 
     this.send(connectedEvent, { state: playerUuid })
+    this.send(updateCountEvent, { state: this._players.size })
+    this.send(update, { state: this.getPlayers() })
   }
 
   tick({ state: { mstime }}) {
@@ -50,13 +53,25 @@ class PlayersManager extends Member {
       this.clearPongs()
       this.send(pingEvent)
 
+      this.send(update, { state: this.getPlayers() })
       this.send(updateCountEvent, { state: this._players.size })
     } else if(this.timePing - this.timeout > MSTIMELIMIT) {
       this.timeout = this.timePing
       this.runOutTimeout()
-      
+
+      this.send(update, { state: this.getPlayers() })
       this.send(updateCountEvent, { state: this._players.size })
     }
+  }
+
+  getPlayers() {
+    const players = []
+
+    for (const [uuid, player] of this._players) {
+      players.push({ uuid })
+    }
+
+    return players
   }
 
   checkPlayersPong() {

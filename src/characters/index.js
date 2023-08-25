@@ -4,8 +4,7 @@ const genUuid = Types.UUID.Def().rand
 const loadEvent = require("../events/load-data")
 const readyEvent = require("../events/ready-system")
 
-const connectedPlayerEvent = require("../events/players/connected-player")
-const disconnectedEvent = require("../events/players/disconnected-player")
+const updatePlayersList = require("../events/players/update-players-list")
 
 const freeSpawnsEvent = require("../events/objects/free-spawns")
 const spawnEvent = require("../events/objects/spawn-character")
@@ -42,9 +41,7 @@ class CharactersManager extends Member {
   }
 
   load({ resources: { characters } }) {
-    // console.log(characters)
-    this.onEvent(connectedPlayerEvent, payload => this.addNewCharacter(payload))
-    this.onEvent(disconnectedEvent, payload => this.deleteCharactersByPlayer(payload))
+    this.onEvent(updatePlayersList, payload => this.updatePlayers(payload))
 
     this.onEvent(freeSpawnsEvent, payload => this.freeSpawns(payload))
     this.onEvent(spawnedEvent, payload => this.spawnCharacter(payload))
@@ -63,7 +60,23 @@ class CharactersManager extends Member {
     this.send(readyEvent, { state: { system: "Characters" }})
   }
 
-  addNewCharacter({ state: playerUid }) {
+  updatePlayers({ state: playersData }) {
+
+    const newPlayersUuids = []
+    playersData.forEach(playerData => {
+      newPlayersUuids.push(playerData.uuid)
+
+      if(!this._players.has(playerData.uuid))
+        this.addNewCharacter(playerData.uuid)
+    })
+
+    for (const [playerUuid, _] of this._players) {
+      if(!newPlayersUuids.includes(playerUuid))
+        this.deleteCharactersByPlayer(playerUuid)
+    }
+  }
+
+  addNewCharacter(playerUid) {
     const newCharacter = new Character
     this._characters.set(newCharacter.uuid, newCharacter)
 
@@ -80,7 +93,7 @@ class CharactersManager extends Member {
     }})
   }
 
-  deleteCharactersByPlayer({ state: playerUid }) {
+  deleteCharactersByPlayer(playerUid) {
     const characterUuid = this._players.get(playerUid)
     this._players.delete(playerUid)
     this.deleteCharacter(characterUuid)
