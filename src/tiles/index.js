@@ -4,6 +4,7 @@ const { ChunksList } = require('./chunks-list')
 
 const loadEvent = require("../events/load-data")
 const readyEvent = require("../events/ready-system")
+const connectedEvent = require("../events/players/connected-player")
 
 const addSpwanEvent = require("../events/objects/add-spawn")
 const createWallsEvent = require("../events/objects/create-walls-object")
@@ -25,6 +26,8 @@ class Tiles extends Member {
 
     this.grounds = null
     this.walls = null
+    this.defFullUpdating = 3
+    this.fullUpdating = this.defFullUpdating
 
     // this.onEvent(loadTilesEvent, payload => this.load(payload))
     this.onEvent(loadEvent, payload => this.load(payload))
@@ -39,10 +42,15 @@ class Tiles extends Member {
 
     walls.forEach(wall => this.addWall(wall))
 
+    this.onEvent(connectedEvent, () => this.setFullUpdating())
     this.onEvent(physicUpdateEvent, payload => this.physicUpdated(payload))
     this.onEvent(destroyEvent, payload => this.destroy(payload))
 
     this.send(readyEvent, { state: { system: "Tiles" }})
+  }
+
+  setFullUpdating() {
+    this.fullUpdating = this.defFullUpdating
   }
 
   addGround(ground) {
@@ -119,6 +127,11 @@ class Tiles extends Member {
   }
 
   physicUpdated({ state: objects }) {
+  
+    this.fullUpdating--
+    if(this.fullUpdating > 0)
+      this.grounds.setFullUpdate()
+      this.walls.setFullUpdate()
     
     this.updateTilesCoordinteObjects(objects)
 

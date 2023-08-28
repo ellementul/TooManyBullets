@@ -123,6 +123,7 @@ class Bullet {
     return {
       uuid: this.uuid,
       position: this.getCenterPosition(),
+      velocity: { ...this.velocity }
     }
   }
 }
