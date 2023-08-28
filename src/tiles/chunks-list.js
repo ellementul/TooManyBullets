@@ -65,6 +65,12 @@ class ChunksList extends Map {
     return this.current
   }
 
+  setFullUpdate() {
+    for (const [_, chunk] of this) {
+      chunk.changed = true
+    }
+  }
+
   toDrawLayers() {
     const layers = []
     for (const [uuid, chunk] of this) {
