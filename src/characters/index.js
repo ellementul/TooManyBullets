@@ -489,6 +489,7 @@ class Character {
       playerUuid: this.playerUid,
       state: this._state.animState,
       position: this.getCenterPosition(),
+      speed: this.speed
     }
   }
 }
