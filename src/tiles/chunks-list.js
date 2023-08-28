@@ -68,12 +68,13 @@ class ChunksList extends Map {
   toDrawLayers() {
     const layers = []
     for (const [uuid, chunk] of this) {
-      layers.push({
-        uuid: uuid,
-        type: this.type,
-        tileSize: this.tileSize,
-        tiles: chunk.toDrawTiles()
-      })
+      if(chunk.changed)
+        layers.push({
+          uuid: uuid,
+          type: this.type,
+          tileSize: this.tileSize,
+          tiles: chunk.toDrawTiles()
+        })
     }
 
     return layers
@@ -86,15 +87,18 @@ class Chunk extends Map {
 
     this.uuid = genUuid()
     this.plan = plan
+    this.changed = false
   }
 
   add(tile) {
     tile.chunkUuid = this.uuid
     super.set(tile.uuid, tile)
+    this.changed = true
   }
 
   delete(uuid) {
     super.delete(uuid)
+    this.changed = true
   }
 
   toDrawTiles() {
@@ -111,6 +115,7 @@ class Chunk extends Map {
 
       tiles.push(tileToDraw)
     }
+    this.changed = false
     return tiles
   }
 }
