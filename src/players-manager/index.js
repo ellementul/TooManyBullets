@@ -10,6 +10,7 @@ const pingEvent = require("../events/players/ping-players")
 const pongEvent = require("../events/players/pong-players")
 
 const MSTIMELIMIT = 1000
+const DEF_COOLDOWN_CONNECT = 20
 class PlayersManager extends Member {
   constructor() {
     super()
@@ -17,8 +18,7 @@ class PlayersManager extends Member {
     this._players = new Map
     this.timeout = 0
     this.timePing = 0
-    this.latsConnect = 0
-    this.coolDownConnect = 250
+    this.coolDownConnect = DEF_COOLDOWN_CONNECT
 
     this.onEvent(startSessionEvent, () => this.start())
   }
@@ -37,14 +37,10 @@ class PlayersManager extends Member {
       this._players.get(playerUuid).pong = true
   }
 
-  isCoolDown() {
-    return this.coolDownConnect >  Date.now() - this.latsConnect
-  }
-
   connectPlayer(playerUuid) {
-    if(this.isCoolDown()) return
+    if(this.coolDownConnect > 0) return
 
-    this.latsConnect = Date.now()
+    this.coolDownConnect = DEF_COOLDOWN_CONNECT
 
     this._players.set(playerUuid, {
       pong: false,
@@ -62,17 +58,21 @@ class PlayersManager extends Member {
     if(this.checkPlayersPong()) {
       this.timeout = this.timePing
       this.clearPongs()
-      this.send(pingEvent)
-
-      this.send(update, { state: this.getPlayers() })
-      this.send(updateCountEvent, { state: this._players.size })
+      this.update()
     } else if(this.timePing - this.timeout > MSTIMELIMIT) {
       this.timeout = this.timePing
-      this.runOutTimeout()
-
-      this.send(update, { state: this.getPlayers() })
-      this.send(updateCountEvent, { state: this._players.size })
+      this.clearPlayersWithoutPong()
+      this.update()
     }
+  }
+
+  update() {
+    if(this.coolDownConnect > 0)
+      this.coolDownConnect--
+
+    this.send(update, { state: this.getPlayers() })
+    this.send(updateCountEvent, { state: this._players.size })
+    this.send(pingEvent)
   }
 
   getPlayers() {
@@ -98,11 +98,6 @@ class PlayersManager extends Member {
     for (const [uuid, player] of this._players) {
       player.pong = false
     }
-  }
-
-  runOutTimeout() {
-    this.clearPlayersWithoutPong()
-    this.send(pingEvent)
   }
 
   clearPlayersWithoutPong() {
