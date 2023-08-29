@@ -9,7 +9,7 @@ const update = require("../events/players/update-players-list")
 const pingEvent = require("../events/players/ping-players")
 const pongEvent = require("../events/players/pong-players")
 
-const MSTIMELIMIT = 2000
+const MSTIMELIMIT = 1000
 class PlayersManager extends Member {
   constructor() {
     super()
@@ -17,6 +17,8 @@ class PlayersManager extends Member {
     this._players = new Map
     this.timeout = 0
     this.timePing = 0
+    this.latsConnect = 0
+    this.coolDownConnect = 250
 
     this.onEvent(startSessionEvent, () => this.start())
   }
@@ -31,10 +33,19 @@ class PlayersManager extends Member {
     if(!this._players.has(playerUuid))
       this.connectPlayer(playerUuid)
 
-    this._players.get(playerUuid).pong = true
+    if(this._players.has(playerUuid))
+      this._players.get(playerUuid).pong = true
+  }
+
+  isCoolDown() {
+    return this.coolDownConnect >  Date.now() - this.latsConnect
   }
 
   connectPlayer(playerUuid) {
+    if(this.isCoolDown()) return
+
+    this.latsConnect = Date.now()
+
     this._players.set(playerUuid, {
       pong: false,
       deltaTime: 0
