@@ -105,7 +105,7 @@ class CharactersManager extends Member {
     const character = this._characters.get(uuid)
     character.onDestroy((uuid) => {
       this.deleteCharacter(uuid)
-      this.addNewCharacter({ state: character.playerUid })
+      this.addNewCharacter(character.playerUid)
     })
 
     character.killed()
@@ -115,7 +115,7 @@ class CharactersManager extends Member {
   falling(character) {
     character.onDestroy((uuid) => {
       this.deleteCharacter(uuid)
-      this.addNewCharacter({ state: character.playerUid })
+      this.addNewCharacter(character.playerUid)
     })
 
     character.falling()
@@ -169,7 +169,7 @@ class CharactersManager extends Member {
     const characterUuid = this._players.get(playerUuid)
     const character = this._characters.get(characterUuid)
 
-    if(!character.isSpawned())
+    if(!character || !character.isSpawned())
       return
 
     character.changeDirection(direct)
@@ -186,7 +186,7 @@ class CharactersManager extends Member {
     const characterUuid = this._players.get(playerUuid)
     const character = this._characters.get(characterUuid)
 
-    if(!character.isSpawned())
+    if(!character || !character.isSpawned())
       return
 
     character.changeShotDirect(direct)
@@ -199,7 +199,7 @@ class CharactersManager extends Member {
     const characterUuid = this._players.get(playerUuid)
     const character = this._characters.get(characterUuid)
 
-    if(!character.isSpawned())
+    if(!character || !character.isSpawned())
       return
 
     if(isShotting)
