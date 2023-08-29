@@ -26,8 +26,6 @@ class Tiles extends Member {
 
     this.grounds = null
     this.walls = null
-    this.defFullUpdating = 3
-    this.fullUpdating = this.defFullUpdating
 
     // this.onEvent(loadTilesEvent, payload => this.load(payload))
     this.onEvent(loadEvent, payload => this.load(payload))
@@ -50,7 +48,8 @@ class Tiles extends Member {
   }
 
   setFullUpdating() {
-    this.fullUpdating = this.defFullUpdating
+    this.grounds.setFullUpdate()
+    this.walls.setFullUpdate()
   }
 
   addGround(ground) {
@@ -127,11 +126,6 @@ class Tiles extends Member {
   }
 
   physicUpdated({ state: objects }) {
-  
-    this.fullUpdating--
-    if(this.fullUpdating > 0)
-      this.grounds.setFullUpdate()
-      this.walls.setFullUpdate()
     
     this.updateTilesCoordinteObjects(objects)
 
