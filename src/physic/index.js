@@ -65,10 +65,6 @@ class Physic extends Member {
     this._state = PAUSE
   }
 
-  clear() {
-    this.send(clearedEvent, { state: { system: "Physic" }})
-  }
-
   createDynamic({ state: newObject }) {
     if(newObject.shape === "Box")
       this.createDynamicBox(newObject)
@@ -133,7 +129,20 @@ class Physic extends Member {
     }
   }
 
+  clear() {
+    for (const [uuid, _] of this._dynamicObjects) {
+      this.removeDynamic({ state: uuid })
+    }
+
+    for (const [uuid, _] of this._staticObjects) {
+      this.deleteWall({ state: uuid })
+    }
+
+    this.send(clearedEvent, { state: { system: "Physic" }})
+  }
+
   step() {
+    console.log(this._staticObjects.size, this._dynamicObjects.size)
     if(this._state != RUNNING) return
     this.timer.step()
 
