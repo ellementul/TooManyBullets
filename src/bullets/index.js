@@ -71,7 +71,9 @@ class BulletsManager extends Member {
     const bullets = []
     
     for (const [uuid, bullet] of this._bullets) {
-      bullet.position = positions[uuid]
+      if(positions[uuid])
+        bullet.position = positions[uuid]
+
       bullets.push(bullet.draw())
     }
 
@@ -81,14 +83,11 @@ class BulletsManager extends Member {
   }
 
   outLimit({ state: uuid }) {
-    if(this.state != LOADED) return
-
     if(this._bullets.has(uuid))
       this.delete(uuid)
   }
 
   destroy({ state: uuid }) {
-    if(this.state != LOADED) return
 
     if(this._bullets.has(uuid))
       this.delete(uuid)

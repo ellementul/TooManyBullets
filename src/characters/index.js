@@ -243,17 +243,18 @@ class CharactersManager extends Member {
     if(!character || !character.isSpawned())
       return
 
-    if(isShotting)
-      character.setShotting(() => {
-        this.send(spwanBulletEvent, {
-          state: {
-            parentUuid: characterUuid,
-            ...character.getSpawnBulletPostitonAndDirect()
-          }
-        })
+    character.isShotting = isShotting
+
+    if(character.coolDown <= 0 && isShotting == true) {
+      character.coolDown = 7
+
+      this.send(spwanBulletEvent, {
+        state: {
+          parentUuid: character.uuid,
+          ...character.getSpawnBulletPostitonAndDirect()
+        }
       })
-    else
-      character.delShotting()
+    }
   }
 
   physicUpdate({ state: positions }) {
@@ -262,8 +263,11 @@ class CharactersManager extends Member {
     const characters = []
     
     for (const [uuid, character] of this._characters) {
-      if(character.isSpawned())
-        character.position = positions[uuid]
+      if(character.isSpawned()) {
+        if(positions[uuid])
+          character.position = positions[uuid]
+        this.shotting(character)
+      }
 
       characters.push(character.draw())
     }
@@ -275,6 +279,13 @@ class CharactersManager extends Member {
     this.send(updateKillsEvent, {
       state: this.killCount
     })
+  }
+
+  shotting(character) {
+    if(character.coolDown > 0)
+      character.coolDown--
+    else
+      character.isShotting = false
   }
 
   updateTilesCoordinates({ state: tilesPosition }) {
@@ -333,6 +344,7 @@ class Character {
     this.velocity = { x: 0, y: 0 }
     this.shotDirect = { x: 1, y: 0 }
     this.isShotting = false
+    this.coolDown = 0
     this.box = {
       width: 115,
       height: 340
@@ -370,21 +382,6 @@ class Character {
       
     this._state = state
     return true
-  }
-
-  setShotting(cb) {
-    if(this.isShotting) return
-
-    this.isShotting = true
-    this.shottingTimer = setInterval(cb, 500)
-    cb() //first shot
-  }
-
-  delShotting() {
-    if(!this.isShotting) return
-
-    this.isShotting = false
-    clearInterval(this.shottingTimer)
   }
   
 
@@ -425,8 +422,6 @@ class Character {
       setTimeout(() => {
         this.destroyCallback(this.uuid)
       }, 3000)
-
-    this.delShotting()
   }
 
   falling() {
@@ -437,8 +432,6 @@ class Character {
       setTimeout(() => {
         this.destroyCallback(this.uuid)
       }, 3000)
-
-    this.delShotting()
   }
 
   getCenterPosition() {
@@ -467,7 +460,7 @@ class Character {
     }
 
     return {
-      direct: this.shotDirect,
+      direct: { ...this.shotDirect },
       position: {
         x: characterCenter.x + bulletShift.x + gunShift.x * Math.sign(this.shotDirect.x),
         y: characterCenter.y + bulletShift.y + gunShift.y

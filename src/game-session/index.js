@@ -6,7 +6,7 @@ const readyWorldEvent = require("../events/ready-world")
 const runWorldEvent = require("../events/run-world")
 const stopWorldEvent = require("../events/stop-world")
 const reloadWorldEvent = require("../events/reload-world")
-const updatePlayersCountEvent = require("../events/players/update-players-count")
+const updatePlayersCountEvent = require("../events/players/update-players-list")
 
 const START = Symbol("Start")
 const LOADING = Symbol("Loading")
@@ -17,8 +17,13 @@ class GameSession extends Member {
   constructor() {
     super()
 
-    this.onEvent(readyMembers, () => this.startSession())
     this._state = START
+    this.timeout = null
+
+    this.onEvent(readyMembers, () => this.startSession())
+    this.onEvent(readyPlayersManagerEvent, () => this.loadSession())
+    this.onEvent(readyWorldEvent, () => this.finishLoadingWorld())
+    this.onEvent(updatePlayersCountEvent, payload => this.isCountPlayers(payload))
   }
 
   startSession() {
@@ -27,26 +32,23 @@ class GameSession extends Member {
     else
       return
 
-    this.onEvent(readyPlayersManagerEvent, () => this.loadSession())
     this.send(startSessionEvent)
   }
 
   loadSession() {
-    this.onEvent(readyWorldEvent, () => this.finishLoadingWorld())
     this.send(loadWorldEvent)
   }
 
   finishLoadingWorld(){
     if(this._state == LOADING)
       this._state = PAUSE
-    else
-      return
 
-    this.onEvent(updatePlayersCountEvent, payload => this.isCountPlayers(payload))
+    if(this.timeout) clearTimeout(this.timeout)
+    this.timeout = setTimeout(() => this.send(reloadWorldEvent), 60*1000)
   }
 
-  isCountPlayers({ state }) {
-    if(state > 0)
+  isCountPlayers({ state: players }) {
+    if(players.length > 0)
       this.run()
     else
       this.makePause()
@@ -63,7 +65,6 @@ class GameSession extends Member {
     if(this._state == RUNNING) {
       this._state = PAUSE
       this.send(stopWorldEvent)
-      this.send(reloadWorldEvent)
     }
   }
 }

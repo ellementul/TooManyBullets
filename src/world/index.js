@@ -66,8 +66,11 @@ class World extends Member {
 
     this.neededSytsems[system] = false
     console.log(`The ${system} system  is cleared`)
-    if(this.checkClearingSystems())
+    if(this.checkClearingSystems()) {
       console.log("Cleared all systems!")
+      this.state = INIT
+      this.load()
+    }
   }
 
   reload() {
