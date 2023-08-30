@@ -49,6 +49,7 @@ class CharactersManager extends Member {
     this.state = INIT
 
     this.onEvent(loadEvent, payload => this.load(payload))
+    this.onEvent(clearDataEvent, () => this.clear())
 
     this.onEvent(updatePlayersList, payload => this.updatePlayers(payload))
 

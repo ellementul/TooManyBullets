@@ -68,6 +68,11 @@ class Plan {
       return tile
     }
   }
+
+  clear() {
+    this._size = 0
+    this._lists = {}
+  }
 }
 
 class PlanWithBorder extends Plan {

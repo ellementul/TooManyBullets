@@ -5,6 +5,8 @@ const { ChunksList } = require('./chunks-list')
 const loadEvent = require("../events/load-data")
 const readyEvent = require("../events/ready-system")
 const connectedEvent = require("../events/players/connected-player")
+const clearedEvent = require("../events/cleared-system")
+const clearDataEvent = require("../events/clear-data")
 
 const addSpwanEvent = require("../events/objects/add-spawn")
 const createWallsEvent = require("../events/objects/create-walls-object")
@@ -20,34 +22,51 @@ const deleteHPEvent = require("../events/objects/remove-hp")
 const destroyEvent = require("../events/objects/destroyed-object")
 const updateEvent = require("../events/objects/update-tiles")
 
+const INIT = Symbol()
+const LOADING = Symbol()
+const LOADED = Symbol()
+const CLEARING = Symbol()
+const CLEARED = Symbol()
+
+
 class Tiles extends Member {
   constructor() {
     super()
 
     this.grounds = null
     this.walls = null
+    this.state = INIT
 
-    // this.onEvent(loadTilesEvent, payload => this.load(payload))
     this.onEvent(loadEvent, payload => this.load(payload))
+    this.onEvent(clearDataEvent, payload => this.clear(payload))
+
+    this.onEvent(connectedEvent, () => this.setFullUpdating())
+    this.onEvent(physicUpdateEvent, payload => this.physicUpdated(payload))
+    this.onEvent(destroyEvent, payload => this.destroy(payload))
   }
 
   load({ resources: { tileMap: { grounds, walls, tileSize } } }) {
-    this.grounds = new ChunksList("ground", tileSize)
-    this.walls = new ChunksList("walls", tileSize)
+    if(this.state != INIT && this.state != CLEARED) return
+
+    if(this.state == INIT) {
+      this.grounds = new ChunksList("ground", tileSize)
+      this.walls = new ChunksList("walls", tileSize)
+    }
+
+    this.state = LOADING
 
     grounds.forEach(ground => this.addGround(ground))
     this.updateOutWalls()
 
     walls.forEach(wall => this.addWall(wall))
 
-    this.onEvent(connectedEvent, () => this.setFullUpdating())
-    this.onEvent(physicUpdateEvent, payload => this.physicUpdated(payload))
-    this.onEvent(destroyEvent, payload => this.destroy(payload))
-
+    
+    this.state = LOADED
     this.send(readyEvent, { state: { system: "Tiles" }})
   }
 
   setFullUpdating() {
+    if(this.state != LOADED) return
     this.grounds.setFullUpdate()
     this.walls.setFullUpdate()
   }
@@ -106,6 +125,8 @@ class Tiles extends Member {
 
 
   destroy({ state: uuid }) {
+    if(this.state != LOADED) return
+
     const wall = this.walls.getTileByUuid(uuid)
     if(wall)
       this.deleteWall(wall)
@@ -119,6 +140,18 @@ class Tiles extends Member {
     this.send(removeWallsEvent, { state: uuid })
   }
 
+  clear() {
+    if(this.state != LOADED) return
+    this.state = CLEARING
+
+    this.grounds.clearChunks()
+    this.walls.clearChunks()
+
+    this.state = CLEARED
+
+    this.send(clearedEvent, { state: { system: "Tiles" }})
+  }
+
   updateOutWalls() {
     const { added } = this.grounds.plan.getCellsOut()
     // added.forEach(outWall => this.addOutWall(outWall))
@@ -126,6 +159,7 @@ class Tiles extends Member {
   }
 
   physicUpdated({ state: objects }) {
+    if(this.state != LOADED) return
     
     this.updateTilesCoordinteObjects(objects)
 
