@@ -3,6 +3,9 @@ const genUuid = Types.UUID.Def().rand
 
 const loadEvent = require("../events/load-data")
 const readyEvent = require("../events/ready-system")
+const clearDataEvent = require("../events/clear-data")
+const clearedEvent = require("../events/cleared-system")
+
 
 const updatePlayersList = require("../events/players/update-players-list")
 
@@ -29,6 +32,12 @@ const shotActionEvent = require("../events/players/shot-action")
 
 const spwanBulletEvent = require("../events/objects/spawn-bullet")
 
+
+const INIT = Symbol()
+const LOADING = Symbol()
+const LOADED = Symbol()
+const CLEARING = Symbol()
+
 class CharactersManager extends Member {
   constructor() {
     super()
@@ -37,10 +46,10 @@ class CharactersManager extends Member {
     this._players = new Map
     this.killCount = 0
 
-    this.onEvent(loadEvent, payload => this.load(payload))
-  }
+    this.state = INIT
 
-  load({ resources: { characters } }) {
+    this.onEvent(loadEvent, payload => this.load(payload))
+
     this.onEvent(updatePlayersList, payload => this.updatePlayers(payload))
 
     this.onEvent(freeSpawnsEvent, payload => this.freeSpawns(payload))
@@ -55,12 +64,19 @@ class CharactersManager extends Member {
     this.onEvent(shotActionEvent, payload => this.shotCharacter(payload))
 
     this.onEvent(killedEvent, payload => this.killed(payload))
-    
+  }
+
+  load({ resources: { characters } }) {
+    if(this.state != INIT) return
+    this.state = LOADING
+    this.state = LOADED
+
 
     this.send(readyEvent, { state: { system: "Characters" }})
   }
 
   updatePlayers({ state: playersData }) {
+    if(this.state != LOADED) return
 
     const newPlayersUuids = []
     playersData.forEach(playerData => {
@@ -100,6 +116,7 @@ class CharactersManager extends Member {
   }
 
   killed({ state: uuid }) {
+    if(this.state != LOADED) return
     if(!this._characters.has(uuid)) return
 
     const character = this._characters.get(uuid)
@@ -127,7 +144,21 @@ class CharactersManager extends Member {
     this.send(removeDynamicObject, { state: uuid })
   }
 
+  clear() {
+    if(this.state != LOADED) return
+    this.state = CLEARING
+
+    for (const [uuid, _] of this._characters) {
+      this.deleteCharacter(uuid)
+    }
+
+    this.state = INIT
+    this.send(clearedEvent, { state: { system: "Characters" }})
+  }
+
   freeSpawns({ spawns }) {
+    if(this.state != LOADED) return
+
     const spawn = spawns[0]
     if(!spawn)
       return
@@ -145,6 +176,8 @@ class CharactersManager extends Member {
   }
 
   spawnCharacter({ characterUuid, position }) {
+    if(this.state != LOADED) return
+
     const characterShape = this._characters.get(characterUuid).spawn({ position }).serialize()
 
     this.send(createDynamicObject, {
@@ -163,6 +196,8 @@ class CharactersManager extends Member {
   }
 
   moveCharacter({ playerUuid, state: direct }) {
+    if(this.state != LOADED) return
+
     if(!this._players.has(playerUuid))
       return
 
@@ -180,6 +215,8 @@ class CharactersManager extends Member {
   }
 
   setShottingDirect({ playerUuid, state: direct }) {
+    if(this.state != LOADED) return
+
     if(!this._players.has(playerUuid))
       return
 
@@ -193,6 +230,8 @@ class CharactersManager extends Member {
   }
 
   shotCharacter({ playerUuid, state: isShotting }) {
+    if(this.state != LOADED) return
+
     if(!this._players.has(playerUuid))
       return
 
@@ -216,6 +255,8 @@ class CharactersManager extends Member {
   }
 
   physicUpdate({ state: positions }) {
+    if(this.state != LOADED) return
+
     const characters = []
     
     for (const [uuid, character] of this._characters) {
@@ -235,6 +276,8 @@ class CharactersManager extends Member {
   }
 
   updateTilesCoordinates({ state: tilesPosition }) {
+    if(this.state != LOADED) return
+
     for (const uuid in tilesPosition) {
 
       if(!this._characters.has(uuid)) continue
