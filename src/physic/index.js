@@ -4,7 +4,7 @@ const { System } = require("detect-collisions");
 const loadEvent = require("../events/load-data")
 const readyEvent = require("../events/ready-system")
 const runEvent = require("../events/run-world")
-const stopEvent = require("../events/pause-world")
+const stopEvent = require("../events/stop-world")
 
 const createDynamicObject = require("../events/objects/create-dynamic-object")
 const updateDynamicObject = require("../events/objects/update-dynamic-object")
