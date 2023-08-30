@@ -152,6 +152,7 @@ class CharactersManager extends Member {
     for (const [uuid, _] of this._characters) {
       this.deleteCharacter(uuid)
     }
+    this._players.clear()
 
     this.state = INIT
     this.send(clearedEvent, { state: { system: "Characters" }})
