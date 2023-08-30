@@ -3,6 +3,8 @@ const genUuid = Types.UUID.Def().rand
 
 const loadEvent = require("../events/load-data")
 const readyEvent = require("../events/ready-system")
+const clearedEvent = require("../events/cleared-system")
+const clearDataEvent = require("../events/clear-data")
 
 const spwanEvent = require("../events/objects/spawn-bullet")
 const createDynamicObject = require("../events/objects/create-dynamic-object")
@@ -14,27 +16,40 @@ const updateEvent = require("../events/objects/update-bullets")
 const outLimitObjectEvent = require("../events/objects/out-limit-world")
 const destroyEvent = require("../events/objects/destroyed-object")
 
+const INIT = Symbol()
+const LOADING = Symbol()
+const LOADED = Symbol()
+const CLEARING = Symbol()
 
 class BulletsManager extends Member {
   constructor() {
     super()
 
     this._bullets = new Map
+    this.state = INIT
 
     this.onEvent(loadEvent, payload => this.load(payload))
-  }
+    this.onEvent(clearDataEvent, () => this.clear())
 
-  load({ resources: { bullets } }) {
-    // console.log(bullets)
     this.onEvent(spwanEvent, payload => this.addNewBullet(payload))
     this.onEvent(physicUpdateEvent, payload => this.physicUpdate(payload))
     this.onEvent(outLimitObjectEvent, payload => this.outLimit(payload))
     this.onEvent(destroyEvent, payload => this.destroy(payload))
+  }
+
+  load({ resources: { bullets } }) {
+    if(this.state != INIT) return
+    this.state = LOADING
+    // console.log(bullets)
+    this.state = LOADED
+    
 
     this.send(readyEvent, { state: { system: "Bullets" }})
   }
 
   addNewBullet({ state: { parentUuid, direct, position } }) {
+    if(this.state != LOADED) return
+
     const bullet = new Bullet({ direct, position })
     this._bullets.set(bullet.uuid, bullet)
 
@@ -51,6 +66,8 @@ class BulletsManager extends Member {
   }
 
   physicUpdate({ state: positions }) {
+    if(this.state != LOADED) return
+
     const bullets = []
     
     for (const [uuid, bullet] of this._bullets) {
@@ -64,11 +81,15 @@ class BulletsManager extends Member {
   }
 
   outLimit({ state: uuid }) {
+    if(this.state != LOADED) return
+
     if(this._bullets.has(uuid))
       this.delete(uuid)
   }
 
   destroy({ state: uuid }) {
+    if(this.state != LOADED) return
+
     if(this._bullets.has(uuid))
       this.delete(uuid)
   }
@@ -77,6 +98,18 @@ class BulletsManager extends Member {
     this._bullets.delete(uuid)
     this.send(deleteHPEvent, { state: uuid })
     this.send(removeDynamicObject, { state: uuid })
+  }
+
+  clear() {
+    if(this.state != LOADED) return
+    this.state = CLEARING
+
+    for (const [uuid, _] of this._bullets) {
+      this.delete(uuid)
+    }
+
+    this.state = INIT
+    this.send(clearedEvent, { state: { system: "Bullets" }})
   }
 }
 

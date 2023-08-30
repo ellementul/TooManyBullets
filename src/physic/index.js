@@ -5,6 +5,8 @@ const loadEvent = require("../events/load-data")
 const readyEvent = require("../events/ready-system")
 const runEvent = require("../events/run-world")
 const stopEvent = require("../events/stop-world")
+const clearedEvent = require("../events/cleared-system")
+const clearDataEvent = require("../events/clear-data")
 
 const createDynamicObject = require("../events/objects/create-dynamic-object")
 const updateDynamicObject = require("../events/objects/update-dynamic-object")
@@ -42,6 +44,7 @@ class Physic extends Member {
 
     this.onEvent(runEvent, () => this.run())
     this.onEvent(stopEvent, () => this.stop())
+    this.onEvent(clearDataEvent, () => this.clear())
     this.onEvent(createDynamicObject, payload => this.createDynamic(payload))
     this.onEvent(updateDynamicObject, payload => this.updateDynamic(payload))
     this.onEvent(removeDynamicObject, payload => this.removeDynamic(payload))
@@ -60,6 +63,10 @@ class Physic extends Member {
 
   stop() {
     this._state = PAUSE
+  }
+
+  clear() {
+    this.send(clearedEvent, { state: { system: "Physic" }})
   }
 
   createDynamic({ state: newObject }) {

@@ -5,6 +5,7 @@ const loadWorldEvent = require("../events/load-world")
 const readyWorldEvent = require("../events/ready-world")
 const runWorldEvent = require("../events/run-world")
 const stopWorldEvent = require("../events/stop-world")
+const reloadWorldEvent = require("../events/reload-world")
 const updatePlayersCountEvent = require("../events/players/update-players-count")
 
 const START = Symbol("Start")
@@ -62,6 +63,7 @@ class GameSession extends Member {
     if(this._state == RUNNING) {
       this._state = PAUSE
       this.send(stopWorldEvent)
+      this.send(reloadWorldEvent)
     }
   }
 }
