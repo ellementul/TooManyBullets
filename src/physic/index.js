@@ -142,7 +142,6 @@ class Physic extends Member {
   }
 
   step() {
-    console.log(this._staticObjects.size, this._dynamicObjects.size)
     if(this._state != RUNNING) return
     this.timer.step()
 

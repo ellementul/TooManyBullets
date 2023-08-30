@@ -140,12 +140,18 @@ class Tiles extends Member {
     this.send(removeWallsEvent, { state: uuid })
   }
 
+  deletePlatform(platform) {
+    const { uuid, chunkUuid } = platform
+
+    this.grounds.delete(uuid, chunkUuid)
+  }
+
   clear() {
     if(this.state != LOADED) return
     this.state = CLEARING
 
-    this.grounds.clearChunks()
-    this.walls.clearChunks()
+    this.grounds.getAll().forEach(platform => this.deletePlatform(platform))
+    this.walls.getAll().forEach(wall => this.deleteWall(wall))
 
     this.state = CLEARED
 

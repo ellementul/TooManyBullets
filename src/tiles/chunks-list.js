@@ -40,11 +40,13 @@ class ChunksList extends Map {
     return this.plan.delete(position)
   }
 
-  clearChunks() {
-    this.plan.clear()
+  getAll() {
+    const uuids = []
     for (const [_, chunk] of this) {
-      chunk.clear()
+      uuids.push(...chunk.values())
     }
+
+    return uuids
   }
 
   getTileByUuid(uuid) {
@@ -112,12 +114,6 @@ class Chunk extends Map {
   delete(uuid) {
     super.delete(uuid)
     this.changed = true
-  }
-
-  clear() {
-    for (const [uuid, _] of this) {
-      this.delete(uuid)
-    }
   }
 
   toDrawTiles() {
