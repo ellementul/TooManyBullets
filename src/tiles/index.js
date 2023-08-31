@@ -36,6 +36,7 @@ class Tiles extends Member {
     this.grounds = null
     this.walls = null
     this.state = INIT
+    this.fullUpdate = true
 
     this.cooldownDestroy = 10
 
@@ -70,6 +71,7 @@ class Tiles extends Member {
     if(this.state != LOADED) return
     this.grounds.setFullUpdate()
     this.walls.setFullUpdate()
+    this.fullUpdate = true
   }
 
   addGround(ground) {
@@ -177,7 +179,7 @@ class Tiles extends Member {
       
       if(randomPlatformOnBorder && !randomPlatformOnBorder.isUnderSpawn){
         this.deletePlatform(randomPlatformOnBorder)
-        this.setFullUpdating()
+        // this.setFullUpdating()
       }
     }
   }
@@ -227,7 +229,13 @@ class Tiles extends Member {
       ...this.walls.toDrawLayers()
     ]
 
-    return { layers }
+    const data =  { 
+      layers, 
+      fullUpdate: this.fullUpdate
+    }
+    this.fullUpdate = false
+
+    return data
   }
 }
 
