@@ -38,6 +38,7 @@ class PlayersManager extends Member {
   }
 
   connectPlayer(playerUuid) {
+    if(this._players.size > 1) return
     if(this.coolDownConnect > 0) return
 
     this.coolDownConnect = DEF_COOLDOWN_CONNECT
