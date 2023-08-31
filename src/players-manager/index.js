@@ -30,7 +30,7 @@ class PlayersManager extends Member {
   }
 
   pong({  playerUuid }) {
-    if(!this._players.has(playerUuid))
+    if(!this._players.has(playerUuid) && this._players.size < 2)
       this.connectPlayer(playerUuid)
 
     if(this._players.has(playerUuid))
@@ -38,7 +38,6 @@ class PlayersManager extends Member {
   }
 
   connectPlayer(playerUuid) {
-    if(this._players.size > 1) return
     if(this.coolDownConnect > 0) return
 
     this.coolDownConnect = DEF_COOLDOWN_CONNECT
