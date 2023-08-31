@@ -31,6 +31,8 @@ class ChunksList extends Map {
     const chunk = this.getEmptyChunck()
     chunk.add(tile)
     this.plan.add(tile)
+
+    return tile
   }
 
   delete(uuid, chunkUuid) {
@@ -109,6 +111,8 @@ class Chunk extends Map {
     tile.chunkUuid = this.uuid
     super.set(tile.uuid, tile)
     this.changed = true
+
+    return tile
   }
 
   delete(uuid) {
