@@ -37,9 +37,14 @@ class ChunksList extends Map {
 
   delete(uuid, chunkUuid) {
     const chunk = this.get(chunkUuid)
-    const { position } = chunk.get(uuid)
-    chunk.delete(uuid)
-    return this.plan.delete(position)
+    if(!chunk) return
+
+    const tile = chunk.get(uuid)
+
+    if(!tile) return
+
+    chunk.delete(tile.uuid)
+    return this.plan.delete(tile.position)
   }
 
   getAll() {
@@ -62,7 +67,7 @@ class ChunksList extends Map {
     if(this.current.size < CHUNK_LIMIT)
       return this.current
 
-    const emptyChunk = new Chunk(this.plan)
+    let emptyChunk = new Chunk(this.plan)
     for (const [uuid, chunk] of this) {
       if(chunk.size < emptyChunk.size || (emptyChunk.size === 0 && chunk.size < CHUNK_LIMIT))
         emptyChunk = chunk

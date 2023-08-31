@@ -170,7 +170,7 @@ class Tiles extends Member {
     if(this.cooldownDestroy > 0)
       return this.cooldownDestroy--
     else
-      this.cooldownDestroy = 15
+      this.cooldownDestroy = Math.floor(256 / this.grounds.plan.cells.size)
 
     const allBorderPlatformsPositions = this.grounds.plan.cells.toArray()
     if(allBorderPlatformsPositions.length > 0) {
@@ -179,7 +179,7 @@ class Tiles extends Member {
       
       if(randomPlatformOnBorder && !randomPlatformOnBorder.isUnderSpawn){
         this.deletePlatform(randomPlatformOnBorder)
-        // this.setFullUpdating()
+        this.setFullUpdating()
       }
     }
   }
