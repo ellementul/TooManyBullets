@@ -57,7 +57,7 @@ class GameSession extends Member {
   }
 
   isCountPlatforms({ state: countPlatforms }) {
-    if(countPlatforms < 256)
+    if(countPlatforms < 128)
       this.send(reloadWorldEvent)
   }
 
