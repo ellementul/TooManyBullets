@@ -305,7 +305,7 @@ class CharactersManager extends Member {
       if(!tilesPosition[uuid].isOnGround)
         this.falling(character)
       else
-        character.fallingDelay = 10
+        character.fallingDelay = 4
     }
   }
 }
@@ -350,7 +350,7 @@ class Character {
     this.shotDirect = { x: 1, y: 0 }
     this.isShotting = false
     this.coolDown = 0
-    this.fallingDelay = 10
+    this.fallingDelay = 6
     this.box = {
       width: 115,
       height: 340
