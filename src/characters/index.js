@@ -3,6 +3,9 @@ const genUuid = Types.UUID.Def().rand
 
 const loadEvent = require("../events/load-data")
 const readyEvent = require("../events/ready-system")
+const clearDataEvent = require("../events/clear-data")
+const clearedEvent = require("../events/cleared-system")
+
 
 const updatePlayersList = require("../events/players/update-players-list")
 
@@ -29,6 +32,12 @@ const shotActionEvent = require("../events/players/shot-action")
 
 const spwanBulletEvent = require("../events/objects/spawn-bullet")
 
+
+const INIT = Symbol()
+const LOADING = Symbol()
+const LOADED = Symbol()
+const CLEARING = Symbol()
+
 class CharactersManager extends Member {
   constructor() {
     super()
@@ -37,10 +46,11 @@ class CharactersManager extends Member {
     this._players = new Map
     this.killCount = 0
 
-    this.onEvent(loadEvent, payload => this.load(payload))
-  }
+    this.state = INIT
 
-  load({ resources: { characters } }) {
+    this.onEvent(loadEvent, payload => this.load(payload))
+    this.onEvent(clearDataEvent, () => this.clear())
+
     this.onEvent(updatePlayersList, payload => this.updatePlayers(payload))
 
     this.onEvent(freeSpawnsEvent, payload => this.freeSpawns(payload))
@@ -55,12 +65,19 @@ class CharactersManager extends Member {
     this.onEvent(shotActionEvent, payload => this.shotCharacter(payload))
 
     this.onEvent(killedEvent, payload => this.killed(payload))
-    
+  }
+
+  load({ resources: { characters } }) {
+    if(this.state != INIT) return
+    this.state = LOADING
+    this.state = LOADED
+
 
     this.send(readyEvent, { state: { system: "Characters" }})
   }
 
   updatePlayers({ state: playersData }) {
+    if(this.state != LOADED) return
 
     const newPlayersUuids = []
     playersData.forEach(playerData => {
@@ -100,6 +117,7 @@ class CharactersManager extends Member {
   }
 
   killed({ state: uuid }) {
+    if(this.state != LOADED) return
     if(!this._characters.has(uuid)) return
 
     const character = this._characters.get(uuid)
@@ -113,6 +131,9 @@ class CharactersManager extends Member {
   }
 
   falling(character) {
+    if(character.fallingDelay > 0)
+      return character.fallingDelay--
+
     character.onDestroy((uuid) => {
       this.deleteCharacter(uuid)
       this.addNewCharacter(character.playerUid)
@@ -127,7 +148,22 @@ class CharactersManager extends Member {
     this.send(removeDynamicObject, { state: uuid })
   }
 
+  clear() {
+    if(this.state != LOADED) return
+    this.state = CLEARING
+
+    for (const [uuid, _] of this._characters) {
+      this.deleteCharacter(uuid)
+    }
+    this._players.clear()
+
+    this.state = INIT
+    this.send(clearedEvent, { state: { system: "Characters" }})
+  }
+
   freeSpawns({ spawns }) {
+    if(this.state != LOADED) return
+
     const spawn = spawns[0]
     if(!spawn)
       return
@@ -145,6 +181,8 @@ class CharactersManager extends Member {
   }
 
   spawnCharacter({ characterUuid, position }) {
+    if(this.state != LOADED) return
+
     const characterShape = this._characters.get(characterUuid).spawn({ position }).serialize()
 
     this.send(createDynamicObject, {
@@ -163,6 +201,8 @@ class CharactersManager extends Member {
   }
 
   moveCharacter({ playerUuid, state: direct }) {
+    if(this.state != LOADED) return
+
     if(!this._players.has(playerUuid))
       return
 
@@ -180,6 +220,8 @@ class CharactersManager extends Member {
   }
 
   setShottingDirect({ playerUuid, state: direct }) {
+    if(this.state != LOADED) return
+
     if(!this._players.has(playerUuid))
       return
 
@@ -193,6 +235,8 @@ class CharactersManager extends Member {
   }
 
   shotCharacter({ playerUuid, state: isShotting }) {
+    if(this.state != LOADED) return
+
     if(!this._players.has(playerUuid))
       return
 
@@ -202,25 +246,31 @@ class CharactersManager extends Member {
     if(!character || !character.isSpawned())
       return
 
-    if(isShotting)
-      character.setShotting(() => {
-        this.send(spwanBulletEvent, {
-          state: {
-            parentUuid: characterUuid,
-            ...character.getSpawnBulletPostitonAndDirect()
-          }
-        })
+    character.isShotting = isShotting
+
+    if(character.coolDown <= 0 && isShotting == true) {
+      character.coolDown = 7
+
+      this.send(spwanBulletEvent, {
+        state: {
+          parentUuid: character.uuid,
+          ...character.getSpawnBulletPostitonAndDirect()
+        }
       })
-    else
-      character.delShotting()
+    }
   }
 
   physicUpdate({ state: positions }) {
+    if(this.state != LOADED) return
+
     const characters = []
     
     for (const [uuid, character] of this._characters) {
-      if(character.isSpawned())
-        character.position = positions[uuid]
+      if(character.isSpawned()) {
+        if(positions[uuid])
+          character.position = positions[uuid]
+        this.shotting(character)
+      }
 
       characters.push(character.draw())
     }
@@ -234,7 +284,16 @@ class CharactersManager extends Member {
     })
   }
 
+  shotting(character) {
+    if(character.coolDown > 0)
+      character.coolDown--
+    else
+      character.isShotting = false
+  }
+
   updateTilesCoordinates({ state: tilesPosition }) {
+    if(this.state != LOADED) return
+
     for (const uuid in tilesPosition) {
 
       if(!this._characters.has(uuid)) continue
@@ -245,6 +304,8 @@ class CharactersManager extends Member {
 
       if(!tilesPosition[uuid].isOnGround)
         this.falling(character)
+      else
+        character.fallingDelay = 4
     }
   }
 }
@@ -288,6 +349,8 @@ class Character {
     this.velocity = { x: 0, y: 0 }
     this.shotDirect = { x: 1, y: 0 }
     this.isShotting = false
+    this.coolDown = 0
+    this.fallingDelay = 6
     this.box = {
       width: 115,
       height: 340
@@ -325,21 +388,6 @@ class Character {
       
     this._state = state
     return true
-  }
-
-  setShotting(cb) {
-    if(this.isShotting) return
-
-    this.isShotting = true
-    this.shottingTimer = setInterval(cb, 500)
-    cb() //first shot
-  }
-
-  delShotting() {
-    if(!this.isShotting) return
-
-    this.isShotting = false
-    clearInterval(this.shottingTimer)
   }
   
 
@@ -380,8 +428,6 @@ class Character {
       setTimeout(() => {
         this.destroyCallback(this.uuid)
       }, 3000)
-
-    this.delShotting()
   }
 
   falling() {
@@ -392,8 +438,6 @@ class Character {
       setTimeout(() => {
         this.destroyCallback(this.uuid)
       }, 3000)
-
-    this.delShotting()
   }
 
   getCenterPosition() {
@@ -422,7 +466,7 @@ class Character {
     }
 
     return {
-      direct: this.shotDirect,
+      direct: { ...this.shotDirect },
       position: {
         x: characterCenter.x + bulletShift.x + gunShift.x * Math.sign(this.shotDirect.x),
         y: characterCenter.y + bulletShift.y + gunShift.y

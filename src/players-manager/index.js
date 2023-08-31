@@ -46,10 +46,12 @@ class PlayersManager extends Member {
       pong: false,
       deltaTime: 0
     })
-
+    console.log("Connected new player: ", playerUuid)
+    
     this.send(connectedEvent, { state: playerUuid })
     this.send(updateCountEvent, { state: this._players.size })
     this.send(update, { state: this.getPlayers() })
+    
   }
 
   tick({ state: { mstime }}) {
@@ -109,6 +111,7 @@ class PlayersManager extends Member {
 
   diconnectedPlayers(playerUuid) {
     this._players.delete(playerUuid)
+    console.log("Disconnected player: ", playerUuid)
     this.send(updateCountEvent, { state: this._players.size })
     this.send(disconnectedEvent, { state: playerUuid })
   }

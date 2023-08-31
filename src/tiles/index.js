@@ -1,10 +1,12 @@
-const { Member } = require('@ellementul/united-events-environment')
+const { Member, Types } = require('@ellementul/united-events-environment')
 
 const { ChunksList } = require('./chunks-list')
 
 const loadEvent = require("../events/load-data")
 const readyEvent = require("../events/ready-system")
 const connectedEvent = require("../events/players/connected-player")
+const clearedEvent = require("../events/cleared-system")
+const clearDataEvent = require("../events/clear-data")
 
 const addSpwanEvent = require("../events/objects/add-spawn")
 const createWallsEvent = require("../events/objects/create-walls-object")
@@ -20,47 +22,73 @@ const deleteHPEvent = require("../events/objects/remove-hp")
 const destroyEvent = require("../events/objects/destroyed-object")
 const updateEvent = require("../events/objects/update-tiles")
 
+const INIT = Symbol()
+const LOADING = Symbol()
+const LOADED = Symbol()
+const CLEARING = Symbol()
+const CLEARED = Symbol()
+
+
 class Tiles extends Member {
   constructor() {
     super()
 
     this.grounds = null
     this.walls = null
+    this.state = INIT
+    this.fullUpdate = true
 
-    // this.onEvent(loadTilesEvent, payload => this.load(payload))
+    this.cooldownDestroy = 10
+
     this.onEvent(loadEvent, payload => this.load(payload))
-  }
-
-  load({ resources: { tileMap: { grounds, walls, tileSize } } }) {
-    this.grounds = new ChunksList("ground", tileSize)
-    this.walls = new ChunksList("walls", tileSize)
-
-    grounds.forEach(ground => this.addGround(ground))
-    this.updateOutWalls()
-
-    walls.forEach(wall => this.addWall(wall))
+    this.onEvent(clearDataEvent, payload => this.clear(payload))
 
     this.onEvent(connectedEvent, () => this.setFullUpdating())
     this.onEvent(physicUpdateEvent, payload => this.physicUpdated(payload))
     this.onEvent(destroyEvent, payload => this.destroy(payload))
+  }
 
+  load({ resources: { tileMap: { grounds, walls, tileSize } } }) {
+    if(this.state != INIT && this.state != CLEARED) return
+
+    if(this.state == INIT) {
+      this.grounds = new ChunksList("ground", tileSize)
+      this.walls = new ChunksList("walls", tileSize)
+    }
+
+    this.state = LOADING
+
+    grounds.forEach(ground => this.addGround(ground))
+
+    walls.forEach(wall => this.addWall(wall))
+
+    
+    this.state = LOADED
     this.send(readyEvent, { state: { system: "Tiles" }})
   }
 
   setFullUpdating() {
+    if(this.state != LOADED) return
     this.grounds.setFullUpdate()
     this.walls.setFullUpdate()
+    this.fullUpdate = true
   }
 
   addGround(ground) {
+    ground.walls = []
     this.grounds.add(ground)
   }
 
   addWall(wall) {
-    this.walls.add(wall)
+    wall = this.walls.add(wall)
 
-    if(wall.isSpawn)
+    const ground = this.grounds.plan.get(wall.position)
+    ground.walls.push(wall)
+
+    if(wall.isSpawn) {
+      ground.isUnderSpawn = true
       return this.addSpawn(wall)
+    }
     
     const { uuid, isApplyDamage, hp, damage, position } = wall
     this.send(createHPEvent,  { state:  { 
@@ -106,6 +134,8 @@ class Tiles extends Member {
 
 
   destroy({ state: uuid }) {
+    if(this.state != LOADED) return
+
     const wall = this.walls.getTileByUuid(uuid)
     if(wall)
       this.deleteWall(wall)
@@ -119,15 +149,46 @@ class Tiles extends Member {
     this.send(removeWallsEvent, { state: uuid })
   }
 
-  updateOutWalls() {
-    const { added } = this.grounds.plan.getCellsOut()
-    // added.forEach(outWall => this.addOutWall(outWall))
-    this.grounds.plan.clearCellsOut()
+  deletePlatform(platform) {
+    const { uuid, chunkUuid } = platform
+    platform.walls.forEach(wall => this.deleteWall(wall))
+    this.grounds.delete(uuid, chunkUuid)
+  }
+
+  clear() {
+    if(this.state != LOADED) return
+    this.state = CLEARING
+
+    this.grounds.getAll().forEach(platform => this.deletePlatform(platform))
+
+    this.state = CLEARED
+
+    this.send(clearedEvent, { state: { system: "Tiles" }})
+  }
+
+  stepDestroy() {
+    if(this.cooldownDestroy > 0)
+      return this.cooldownDestroy--
+    else
+      this.cooldownDestroy = Math.floor(256 / this.grounds.plan.cells.size)
+
+    const allBorderPlatformsPositions = this.grounds.plan.cells.toArray()
+    if(allBorderPlatformsPositions.length > 0) {
+      const rand = Types.Index.Def(allBorderPlatformsPositions.length).rand
+      const randomPlatformOnBorder = this.grounds.plan.get(allBorderPlatformsPositions[rand()].position)
+      
+      if(randomPlatformOnBorder && !randomPlatformOnBorder.isUnderSpawn){
+        this.deletePlatform(randomPlatformOnBorder)
+        this.setFullUpdating()
+      }
+    }
   }
 
   physicUpdated({ state: objects }) {
+    if(this.state != LOADED) return
     
     this.updateTilesCoordinteObjects(objects)
+    this.stepDestroy()
 
     this.send(updateEvent, {
       state: this.serialize()
@@ -154,11 +215,11 @@ class Tiles extends Member {
     })
   }
 
-  getTilesCoordinate({ x, y, pivot, vx, vy }) {
+  getTilesCoordinate({ x, y, pivot }) {
     const { height, width } = this.grounds.tileSize
     return {
-      row: Math.floor((x + pivot.x - (vx * 0.05 )) / width),
-      column: Math.floor((y + pivot.y - (vy * 0.05 )) / height)
+      column: Math.floor((x + pivot.x) / width),
+      row: Math.floor((y + pivot.y) / height)
     }
   }
 
@@ -168,7 +229,13 @@ class Tiles extends Member {
       ...this.walls.toDrawLayers()
     ]
 
-    return { layers }
+    const data =  { 
+      layers, 
+      fullUpdate: this.fullUpdate
+    }
+    this.fullUpdate = false
+
+    return data
   }
 }
 

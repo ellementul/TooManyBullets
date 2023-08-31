@@ -2,6 +2,7 @@ const { Member, Types, events: { time } } = require('@ellementul/united-events-e
 const genUuid = Types.UUID.Def().rand
 
 const addEvent = require("../events/objects/add-spawn")
+const clearDataEvent = require("../events/clear-data")
 const freeSpawnsEvent = require("../events/objects/free-spawns")
 const spawnEvent = require("../events/objects/spawn-character")
 const readyEvent = require("../events/objects/ready-spawned")
@@ -14,6 +15,7 @@ class Spawns extends Member {
     this.queue = []
     
     this.onEvent(addEvent, payload => this.addSpawn(payload))
+    this.onEvent(clearDataEvent, payload => this.clear(payload))
     this.onEvent(time, () => this.checkSpawns())
     this.onEvent(spawnEvent, payload => this.setupSpawningCharacter(payload))
   }
@@ -22,6 +24,10 @@ class Spawns extends Member {
     spawn.uuid = genUuid()
     spawn.isFree = true
     this._spawns.set(spawn.uuid, spawn)
+  }
+
+  clear() {
+    this._spawns.clear()
   }
 
   getFreeSpawns() {

@@ -12,7 +12,7 @@ class Plan {
   }
 
   add(tile) {
-    const { row, column} = tile.position
+    const { row, column } = tile.position
 
     if(!this._lists[row])
       this._lists[row] = {}
@@ -68,6 +68,11 @@ class Plan {
       return tile
     }
   }
+
+  clear() {
+    this._size = 0
+    this._lists = {}
+  }
 }
 
 class PlanWithBorder extends Plan {
@@ -101,6 +106,26 @@ class PlanWithBorder extends Plan {
 
     if(!isFull)
       this.addCell(tile.position)
+  }
+
+  delete(position) {
+    super.delete(position)
+
+    this.delCell(position)
+
+    const neighbours = this.getNeighbours(position)
+
+    for (const direct in neighbours) {
+      const neighbour = neighbours[direct]
+      if(neighbour.uuid) {
+        this.addCellOut(position)
+        this.addCell(neighbour.position)
+      }
+      else {
+        if(!this.isNeighbour(neighbour.position))
+          this.delCellOut(neighbour.position)
+      }
+    }
   }
 
   addCell(position) {
@@ -168,6 +193,17 @@ class PlanWithBorder extends Plan {
     }
 
     return isFull
+  }
+
+  isNeighbour(position) {
+    const neighbours = this.getNeighbours(position)
+
+    for (const direct in neighbours) {
+      if(neighbours[direct].uuid)
+        return true
+    }
+
+    return false
   }
 }
 

@@ -4,8 +4,10 @@ const readyPlayersManagerEvent = require("../events/ready-players-manager")
 const loadWorldEvent = require("../events/load-world")
 const readyWorldEvent = require("../events/ready-world")
 const runWorldEvent = require("../events/run-world")
-const stopWorldEvent = require("../events/pause-world")
-const updatePlayersCountEvent = require("../events/players/update-players-count")
+const stopWorldEvent = require("../events/stop-world")
+const reloadWorldEvent = require("../events/reload-world")
+const updatePlayersCountEvent = require("../events/players/update-players-list")
+const updatePlatfromsCountEvent = require("../events/objects/update-platforms-count")
 
 const START = Symbol("Start")
 const LOADING = Symbol("Loading")
@@ -16,8 +18,14 @@ class GameSession extends Member {
   constructor() {
     super()
 
-    this.onEvent(readyMembers, () => this.startSession())
     this._state = START
+    this.timeout = null
+
+    this.onEvent(readyMembers, () => this.startSession())
+    this.onEvent(readyPlayersManagerEvent, () => this.loadSession())
+    this.onEvent(readyWorldEvent, () => this.finishLoadingWorld())
+    this.onEvent(updatePlayersCountEvent, payload => this.isCountPlayers(payload))
+    this.onEvent(updatePlatfromsCountEvent, payload => this.isCountPlatforms(payload))
   }
 
   startSession() {
@@ -26,29 +34,31 @@ class GameSession extends Member {
     else
       return
 
-    this.onEvent(readyPlayersManagerEvent, () => this.loadSession())
     this.send(startSessionEvent)
   }
 
   loadSession() {
-    this.onEvent(readyWorldEvent, () => this.finishLoadingWorld())
     this.send(loadWorldEvent)
   }
 
   finishLoadingWorld(){
     if(this._state == LOADING)
       this._state = PAUSE
-    else
-      return
 
-    this.onEvent(updatePlayersCountEvent, payload => this.isCountPlayers(payload))
+    if(this.timeout) clearTimeout(this.timeout)
+    this.timeout = setTimeout(() => this.send(reloadWorldEvent), 10*60*1000)
   }
 
-  isCountPlayers({ state }) {
-    if(state > 0)
+  isCountPlayers({ state: players }) {
+    if(players.length > 0)
       this.run()
     else
       this.makePause()
+  }
+
+  isCountPlatforms({ state: countPlatforms }) {
+    if(countPlatforms < 256)
+      this.send(reloadWorldEvent)
   }
 
   run() {

@@ -3,8 +3,10 @@ const { System } = require("detect-collisions");
 
 const loadEvent = require("../events/load-data")
 const readyEvent = require("../events/ready-system")
-const runEvent = require("../events/run-world")
-const stopEvent = require("../events/pause-world")
+// const runEvent = require("../events/run-world")
+// const stopEvent = require("../events/stop-world")
+const clearedEvent = require("../events/cleared-system")
+const clearDataEvent = require("../events/clear-data")
 
 const createDynamicObject = require("../events/objects/create-dynamic-object")
 const updateDynamicObject = require("../events/objects/update-dynamic-object")
@@ -15,14 +17,17 @@ const updateEvent = require("../events/objects/update-physic")
 const overlapEvent = require("../events/objects/overlap-objects")
 const outLimitObjectEvent = require("../events/objects/out-limit-world")
 
-const LOAD = Symbol("Loading")
-const PAUSE = Symbol("Pause")
-const RUNNING = Symbol("Running")
+const INIT = Symbol()
+const LOADING = Symbol()
+const LOADED = Symbol()
+const PAUSE = Symbol()
+const RUNNING = Symbol()
+
 class Physic extends Member {
   constructor() {
     super()
 
-    this._state = LOAD
+    this._state = INIT
     this.timer = new Timer
 
     this._dynamicObjects = new Map
@@ -34,31 +39,38 @@ class Physic extends Member {
     this.limit = 360*36
     
     this.onEvent(loadEvent, payload => this.load(payload))
-  }
 
-  load({ resources: { physic } }) {
-
-    this.limitsRect = physic.limitsRect
-
-    this.onEvent(runEvent, () => this.run())
-    this.onEvent(stopEvent, () => this.stop())
+    // this.onEvent(runEvent, () => this.run())
+    // this.onEvent(stopEvent, () => this.stop())
+    this.onEvent(clearDataEvent, () => this.clear())
     this.onEvent(createDynamicObject, payload => this.createDynamic(payload))
     this.onEvent(updateDynamicObject, payload => this.updateDynamic(payload))
     this.onEvent(removeDynamicObject, payload => this.removeDynamic(payload))
     this.onEvent(createWallsEvent, payload => this.createWall(payload))
     this.onEvent(removeWallsEvent, payload => this.deleteWall(payload))
     this.onEvent(time, () => this.step())
+  }
 
+  load({ resources: { physic } }) {
+    if(this._state != INIT) return
+    this._state = LOADING
+
+    this.limitsRect = physic.limitsRect
+
+    this._state = LOADED
     this.stop()
     this.send(readyEvent, { state: { system: "Physic" }})
+    this.run()
   }
 
   run() {
+    if(this._state != PAUSE) return
     this._state = RUNNING
     this.timer.run()
   }
 
   stop() {
+    if(this._state != LOADED && this._state != RUNNING) return
     this._state = PAUSE
   }
 
@@ -124,6 +136,19 @@ class Physic extends Member {
       this.collisionSystem.remove(this._staticObjects.get(uuid))
       this._staticObjects.delete(uuid)
     }
+  }
+
+  clear() {
+    for (const [uuid, _] of this._dynamicObjects) {
+      this.removeDynamic({ state: uuid })
+    }
+
+    for (const [uuid, _] of this._staticObjects) {
+      this.deleteWall({ state: uuid })
+    }
+
+    this._state = INIT
+    this.send(clearedEvent, { state: { system: "Physic" }})
   }
 
   step() {
