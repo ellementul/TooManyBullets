@@ -131,6 +131,9 @@ class CharactersManager extends Member {
   }
 
   falling(character) {
+    if(character.fallingDelay > 0)
+      return character.fallingDelay--
+
     character.onDestroy((uuid) => {
       this.deleteCharacter(uuid)
       this.addNewCharacter(character.playerUid)
@@ -301,6 +304,8 @@ class CharactersManager extends Member {
 
       if(!tilesPosition[uuid].isOnGround)
         this.falling(character)
+      else
+        character.fallingDelay = 10
     }
   }
 }
@@ -345,6 +350,7 @@ class Character {
     this.shotDirect = { x: 1, y: 0 }
     this.isShotting = false
     this.coolDown = 0
+    this.fallingDelay = 10
     this.box = {
       width: 115,
       height: 340
