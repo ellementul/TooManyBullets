@@ -7,6 +7,7 @@ const runWorldEvent = require("../events/run-world")
 const stopWorldEvent = require("../events/stop-world")
 const reloadWorldEvent = require("../events/reload-world")
 const updatePlayersCountEvent = require("../events/players/update-players-list")
+const updatePlatfromsCountEvent = require("../events/objects/update-platforms-count")
 
 const START = Symbol("Start")
 const LOADING = Symbol("Loading")
@@ -24,6 +25,7 @@ class GameSession extends Member {
     this.onEvent(readyPlayersManagerEvent, () => this.loadSession())
     this.onEvent(readyWorldEvent, () => this.finishLoadingWorld())
     this.onEvent(updatePlayersCountEvent, payload => this.isCountPlayers(payload))
+    this.onEvent(updatePlatfromsCountEvent, payload => this.isCountPlatforms(payload))
   }
 
   startSession() {
@@ -44,7 +46,7 @@ class GameSession extends Member {
       this._state = PAUSE
 
     if(this.timeout) clearTimeout(this.timeout)
-    this.timeout = setTimeout(() => this.send(reloadWorldEvent), 60*1000)
+    this.timeout = setTimeout(() => this.send(reloadWorldEvent), 10*60*1000)
   }
 
   isCountPlayers({ state: players }) {
@@ -52,6 +54,11 @@ class GameSession extends Member {
       this.run()
     else
       this.makePause()
+  }
+
+  isCountPlatforms({ state: countPlatforms }) {
+    if(countPlatforms < 230)
+      this.send(reloadWorldEvent)
   }
 
   run() {
