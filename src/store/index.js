@@ -1,3 +1,6 @@
+const fs = require('fs')
+const YAML = require('yaml')
+
 const { Member } = require('@ellementul/united-events-environment')
 
 const { Parser } = require('./parser')
@@ -5,9 +8,12 @@ const { Parser } = require('./parser')
 const loadEvent = require("../events/load-resources")
 const sendDataEvent = require("../events/load-data")
 
-const { default: { tileMap } } = require("../assets/world.yaml")
-const { default: characters } = require("../assets/characters.yaml")
-const { default: bullets } = require("../assets/characters.yaml")
+const file = fs.readFileSync('./src/assets/world.yaml', 'utf8')
+const { tileMap } = YAML.parse(file)
+
+
+// const { default: characters } = require("../assets/characters.yaml")
+// const { default: bullets } = require("../assets/characters.yaml")
 
 class Store extends Member {
   constructor() {
@@ -30,8 +36,8 @@ class Store extends Member {
     const parser = new Parser
     resources.tileMap = parser.parsing(tileMap)
 
-    resources.characters = characters
-    resources.bullets = bullets
+    resources.characters = []
+    resources.bullets = []
 
     this.sendResources(resources)
   }
