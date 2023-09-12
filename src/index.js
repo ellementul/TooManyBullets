@@ -1,4 +1,5 @@
-const { UnitedEventsEnvironment: UEE } = require('@ellementul/united-events-environment')
+const { UnitedEventsNode, Room } = require('@ellementul/united-events-environment')
+const { Ticker } = require('@ellementul/uee-timeticker')
 const { WsTransport } = require('@ellementul/uee-ws-transport')
 const { Logging } = require('./logging')
 
@@ -13,30 +14,23 @@ const { CharactersManager } = require("./characters")
 const { BulletsManager } = require("./bullets")
 const { HPDamage } = require("./hp-damage")
 
-const membersList = {
-  roles: [
-    GameSession,
-    PlayersManager,
-    World,
-    Store,
-    Physic,
-    Tiles,
-    Spawns,
-    CharactersManager,
-    BulletsManager,
-    HPDamage
-  ]
-}
+const room = new Room
+room.addMember(Ticker)
+room.addMember(GameSession)
+room.addMember(PlayersManager)
+room.addMember(Store)
+room.addMember(World)
+room.addMember(Physic)
+room.addMember(Tiles)
+room.addMember(Spawns)
+room.addMember(CharactersManager)
+room.addMember(BulletsManager)
+room.addMember(HPDamage)
 
-env = new UEE({
-  Transport: WsTransport,
-  membersList,
-  logging: Logging(),
-  isShowErrors: true
-})
+const env = new UnitedEventsNode(room)
+const transport = new WsTransport("ws://192.168.0.4:8080")
 
+env.setupLogging({})
 
-env.run({
-  isHost: true,
-  signalServerAddress: "ws://45.87.247.189:8080",
-})
+env.build(transport)
+env.run()

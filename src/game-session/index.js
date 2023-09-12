@@ -1,4 +1,4 @@
-const { Member, events: { readyMembers } } = require('@ellementul/united-events-environment')
+const { Member, events: { openEvent, start } } = require('@ellementul/united-events-environment')
 const startSessionEvent = require("../events/start-session")
 const readyPlayersManagerEvent = require("../events/ready-players-manager")
 const loadWorldEvent = require("../events/load-world")
@@ -21,7 +21,7 @@ class GameSession extends Member {
     this._state = START
     this.timeout = null
 
-    this.onEvent(readyMembers, () => this.startSession())
+    this.onEvent(openEvent, () => this.startSession())
     this.onEvent(readyPlayersManagerEvent, () => this.loadSession())
     this.onEvent(readyWorldEvent, () => this.finishLoadingWorld())
     this.onEvent(updatePlayersCountEvent, payload => this.isCountPlayers(payload))
@@ -35,6 +35,7 @@ class GameSession extends Member {
       return
 
     this.send(startSessionEvent)
+    this.send(start, { delta: 25 })
   }
 
   loadSession() {

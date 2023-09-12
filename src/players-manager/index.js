@@ -21,11 +21,11 @@ class PlayersManager extends Member {
     this.coolDownConnect = DEF_COOLDOWN_CONNECT
 
     this.onEvent(startSessionEvent, () => this.start())
+    this.onEvent(time, payload => this.tick(payload))
+    this.onEvent(pongEvent, payload => this.pong(payload))
   }
 
   start() {
-    this.onEvent(time, payload => this.tick(payload))
-    this.onEvent(pongEvent, payload => this.pong(payload))
     this.send(readyEvent)
   }
 
