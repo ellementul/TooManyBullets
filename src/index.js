@@ -1,6 +1,7 @@
 const { UnitedEventsEnv, Room } = require('@ellementul/united-events-environment')
 const { Ticker } = require('@ellementul/uee-timeticker')
 const { WsTransport } = require('@ellementul/uee-ws-transport')
+const { WsBrowserTransport } = require('@ellementul/uee-ws-browser-transport')
 const { Logging } = require('./logging')
 
 const { GameSession } = require("./game-session")
@@ -32,7 +33,7 @@ const config = env.getConfig()
 const isNodeApi = config.env.nodejsApi
 const signalAddress = config.signalAddress
 
-const transport = isNodeApi ? new WsTransport(signalAddress) : null
+const transport = isNodeApi ? new WsTransport(signalAddress) : new WsBrowserTransport(signalAddress)
 
 env.setupLogging({})
 

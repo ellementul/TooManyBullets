@@ -1,7 +1,7 @@
 const fs = require('fs')
 const YAML = require('yaml')
 
-const { Member, events: { openEvent } } = require('@ellementul/united-events-environment')
+const { Member, events: { buildEvent } } = require('@ellementul/united-events-environment')
 
 const { Parser } = require('./parser')
 
@@ -17,7 +17,7 @@ class Store extends Member {
     super()
 
     this.onEvent(loadEvent, () => this.loadResources())
-    this.onEvent(openEvent, payload => this.setConfig(payload))
+    this.onEvent(buildEvent, payload => this.setConfig(payload))
   }
 
   setConfig({ config }) {
@@ -27,7 +27,7 @@ class Store extends Member {
   loadResources () {
     const resources = {}
 
-    const file = fs.readFileSync(config.paths.assets.world, 'utf8')
+    const file = fs.readFileSync(this.config.paths.assets.world, 'utf8')
     const { tileMap } = YAML.parse(file)
 
     resources.physic = {
