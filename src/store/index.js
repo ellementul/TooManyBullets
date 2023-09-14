@@ -1,15 +1,12 @@
 const fs = require('fs')
 const YAML = require('yaml')
 
-const { Member } = require('@ellementul/united-events-environment')
+const { Member, events: { openEvent } } = require('@ellementul/united-events-environment')
 
 const { Parser } = require('./parser')
 
 const loadEvent = require("../events/load-resources")
 const sendDataEvent = require("../events/load-data")
-
-const file = fs.readFileSync('./src/assets/world.yaml', 'utf8')
-const { tileMap } = YAML.parse(file)
 
 
 // const { default: characters } = require("../assets/characters.yaml")
@@ -20,10 +17,19 @@ class Store extends Member {
     super()
 
     this.onEvent(loadEvent, () => this.loadResources())
+    this.onEvent(openEvent, payload => this.setConfig(payload))
+  }
+
+  setConfig({ config }) {
+    this.config = config
   }
 
   loadResources () {
     const resources = {}
+
+    const file = fs.readFileSync(config.paths.assets.world, 'utf8')
+    const { tileMap } = YAML.parse(file)
+
     resources.physic = {
       limitsRect: {
         x: -1 * tileMap.padding * tileMap.tileSize.width,
