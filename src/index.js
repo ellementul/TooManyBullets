@@ -15,27 +15,32 @@ const { CharactersManager } = require("./characters")
 const { BulletsManager } = require("./bullets")
 const { HPDamage } = require("./hp-damage")
 
-const room = new Room
-room.addMember(Ticker)
-room.addMember(GameSession)
-room.addMember(PlayersManager)
-room.addMember(Store)
-room.addMember(World)
-room.addMember(Physic)
-room.addMember(Tiles)
-room.addMember(Spawns)
-room.addMember(CharactersManager)
-room.addMember(BulletsManager)
-room.addMember(HPDamage)
+function FactoryHost () {
+  const room = new Room
+  room.addMember(Ticker)
+  room.addMember(GameSession)
+  room.addMember(PlayersManager)
+  room.addMember(Store)
+  room.addMember(World)
+  room.addMember(Physic)
+  room.addMember(Tiles)
+  room.addMember(Spawns)
+  room.addMember(CharactersManager)
+  room.addMember(BulletsManager)
+  room.addMember(HPDamage)
 
-const env = new UnitedEventsEnv(room)
-const config = env.getConfig()
-const isNodeApi = config.env.nodejsApi
-const signalAddress = config.signalAddress
+  const env = new UnitedEventsEnv(room)
+  const config = env.getConfig()
+  const isNodeApi = config.env.nodejsApi
+  const signalAddress = config.signalAddress
 
-const transport = isNodeApi ? new WsTransport(signalAddress) : new WsBrowserTransport(signalAddress)
+  const transport = isNodeApi ? new WsTransport(signalAddress) : new WsBrowserTransport(signalAddress)
 
-env.setupLogging({})
+  env.setupLogging({})
 
-env.build(transport)
-env.run()
+  env.build(transport)
+
+  return env
+}
+
+module.exports = { FactoryHost }
