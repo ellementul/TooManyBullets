@@ -1,4 +1,4 @@
-const { UnitedEventsNode, Room } = require('@ellementul/united-events-environment')
+const { UnitedEventsEnv, Room } = require('@ellementul/united-events-environment')
 const { Ticker } = require('@ellementul/uee-timeticker')
 const { WsTransport } = require('@ellementul/uee-ws-transport')
 const { Logging } = require('./logging')
@@ -27,8 +27,12 @@ room.addMember(CharactersManager)
 room.addMember(BulletsManager)
 room.addMember(HPDamage)
 
-const env = new UnitedEventsNode(room)
-const transport = new WsTransport("ws://192.168.0.4:8080")
+const env = new UnitedEventsEnv(room)
+const config = env.getConfig()
+const isNodeApi = config.env.nodejsApi
+const signalAddress = config.signalAddress
+
+const transport = isNodeApi ? new WsTransport(signalAddress) : null
 
 env.setupLogging({})
 

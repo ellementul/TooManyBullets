@@ -25,7 +25,7 @@
   "dependencies": {
     "@ellementul/uee-ws-transport": "^0.7.2",
     "@ellementul/uee-timeticker": "^1.4.7",
-    "@ellementul/united-events-environment": "^1.4.1",
+    "@ellementul/united-events-environment": "^1.6.1",
     "detect-collisions": "^9.1.1",
     "yaml": "^2.3.2"
   }
