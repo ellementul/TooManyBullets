@@ -15,7 +15,7 @@ const { CharactersManager } = require("./characters")
 const { BulletsManager } = require("./bullets")
 const { HPDamage } = require("./hp-damage")
 
-function FactoryHost () {
+function HostFactory ({ address } = {}) {
   const room = new Room
   room.addMember(Ticker)
   room.addMember(GameSession)
@@ -32,7 +32,7 @@ function FactoryHost () {
   const env = new UnitedEventsEnv(room)
   const config = env.getConfig()
   const isNodeApi = config.env.nodejsApi
-  const signalAddress = config.signalAddress
+  const signalAddress = address || config.signalAddress
 
   const transport = isNodeApi ? new WsTransport(signalAddress) : new WsBrowserTransport(signalAddress)
 
@@ -43,4 +43,4 @@ function FactoryHost () {
   return env
 }
 
-module.exports = { FactoryHost }
+module.exports = { HostFactory }
