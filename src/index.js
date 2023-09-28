@@ -1,7 +1,5 @@
 const { UnitedEventsEnv, Room } = require('@ellementul/united-events-environment')
 const { Ticker } = require('@ellementul/uee-timeticker')
-const { WsTransport } = require('@ellementul/uee-ws-transport')
-const { WsBrowserTransport } = require('@ellementul/uee-ws-browser-transport')
 const { Logging } = require('./logging')
 
 const { GameSession } = require("./game-session")
@@ -15,7 +13,7 @@ const { CharactersManager } = require("./characters")
 const { BulletsManager } = require("./bullets")
 const { HPDamage } = require("./hp-damage")
 
-function HostFactory ({ address } = {}) {
+function HostFactory ({ transport } = {}) {
   const room = new Room
   room.addMember(Ticker)
   room.addMember(GameSession)
@@ -30,11 +28,6 @@ function HostFactory ({ address } = {}) {
   room.addMember(HPDamage)
 
   const env = new UnitedEventsEnv(room)
-  const config = env.getConfig()
-  const isNodeApi = config.env.nodejsApi
-  const signalAddress = address || config.signalAddress
-
-  const transport = isNodeApi ? new WsTransport(signalAddress) : new WsBrowserTransport(signalAddress)
 
   env.setupLogging({})
 
