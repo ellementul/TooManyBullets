@@ -1,4 +1,3 @@
-const fs = require('fs')
 const YAML = require('yaml')
 
 const { Member, events: { buildEvent } } = require('@ellementul/united-events-environment')
@@ -24,10 +23,13 @@ class Store extends Member {
     this.config = config
   }
 
-  loadResources () {
+  async loadResources () {
     const resources = {}
 
-    const file = fs.readFileSync(this.config.paths.assets.world, 'utf8')
+    console.log('this.config', this.config)
+    const response = await fetch(this.config.env.baseUrl + this.config.paths.assets.world)
+    const file = await response.text()
+    console.log('response', response)
     const { tileMap } = YAML.parse(file)
 
     resources.physic = {
