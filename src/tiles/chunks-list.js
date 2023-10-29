@@ -87,6 +87,14 @@ class ChunksList extends Map {
     }
   }
 
+  isUpdate() {
+    let changed = false
+    for (const [uuid, chunk] of this)
+      changed ||= chunk.changed
+
+    return changed
+  }
+
   toDrawLayers() {
     const layers = []
     for (const [uuid, chunk] of this) {

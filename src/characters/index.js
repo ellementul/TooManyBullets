@@ -45,6 +45,7 @@ class CharactersManager extends Member {
     this._characters = new Map
     this._players = new Map
     this.killCount = 0
+    this.isUpdatedKills = false
 
     this.state = INIT
 
@@ -128,6 +129,7 @@ class CharactersManager extends Member {
 
     character.killed()
     this.killCount++
+    this.isUpdatedKills = true
   }
 
   falling(character) {
@@ -279,9 +281,12 @@ class CharactersManager extends Member {
       state: characters
     })
 
-    this.send(updateKillsEvent, {
-      state: this.killCount
-    })
+    if(this.isUpdatedKills)
+      this.send(updateKillsEvent, {
+        state: this.killCount
+      })
+
+    this.isUpdatedKills = false
   }
 
   shotting(character) {

@@ -190,17 +190,23 @@ class Tiles extends Member {
     this.updateTilesCoordinteObjects(objects)
     this.stepDestroy()
 
-    this.send(updateEvent, {
-      state: this.serialize()
-    })
+    const isUpdatedWalls = this.walls.isUpdate()
+    const isUpdatedPlatforms = this.grounds.isUpdate()
 
-    this.send(updateWallsCount, {
-      state: this.walls.size
-    })
+    if(isUpdatedWalls)
+      this.send(updateWallsCount, {
+        state: this.walls.size
+      })
 
-    this.send(updatePlatformsCount, {
-      state: this.grounds.size
-    })
+    if(isUpdatedPlatforms)
+      this.send(updatePlatformsCount, {
+        state: this.grounds.size
+      })
+
+    if(isUpdatedWalls || isUpdatedPlatforms)
+      this.send(updateEvent, {
+        state: this.serialize()
+      })
   }
 
   updateTilesCoordinteObjects(objects) {

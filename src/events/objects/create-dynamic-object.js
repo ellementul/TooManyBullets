@@ -4,6 +4,7 @@ const CHARACTERS = Types.Const.Def("Characters")
 const BULLETS = Types.Const.Def("Bullets")
 
 const type = Types.Object.Def({
+  access: "Local",
   system: "Physic",
   entity: "Object",
   action: "Create",
