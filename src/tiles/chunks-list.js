@@ -3,7 +3,7 @@ const genUuid = Types.UUID.Def().rand
 
 const { Plan, PlanWithBorder }  = require('./plan')
 
-const CHUNK_LIMIT = 256
+const CHUNK_LIMIT = 64
 
 class ChunksList extends Map {
   constructor(type, tileSize) {

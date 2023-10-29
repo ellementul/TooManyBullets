@@ -35,7 +35,7 @@ class GameSession extends Member {
       return
 
     this.send(startSessionEvent)
-    this.send(start, { delta: 25 })
+    this.send(start, { delta: 50 })
   }
 
   loadSession() {

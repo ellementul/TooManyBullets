@@ -179,7 +179,6 @@ class Tiles extends Member {
       
       if(randomPlatformOnBorder && !randomPlatformOnBorder.isUnderSpawn){
         this.deletePlatform(randomPlatformOnBorder)
-        this.setFullUpdating()
       }
     }
   }
