@@ -26,10 +26,9 @@ class Store extends Member {
   async loadResources () {
     const resources = {}
 
-    console.log('this.config', this.config)
     const response = await fetch(this.config.env.baseUrl + this.config.paths.assets.world)
     const file = await response.text()
-    console.log('response', response)
+
     const { tileMap } = YAML.parse(file)
 
     resources.physic = {

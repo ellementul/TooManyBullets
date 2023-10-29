@@ -36,7 +36,7 @@ class World extends Member {
   load() {
     if(this.state != INIT) return
     this.state = LOADING
-    console.log("Loading systems...")
+    console.info("Loading systems...")
     
     this.send(loadResorcesEvent)
   }
@@ -53,10 +53,10 @@ class World extends Member {
     if(this.state != LOADING) return
 
     this.neededSytsems[system] = true
-    console.log(`The ${system} system  is ready`)
+    console.info(`The ${system} system  is ready`)
     if(this.checkSystems()) {
       this.state = LOADED
-      console.log("Ready all systems!")
+      console.info("Ready all systems!")
       this.send(readyEvent)
     }
   }
@@ -65,9 +65,9 @@ class World extends Member {
     if(this.state != CLEARING) return
 
     this.neededSytsems[system] = false
-    console.log(`The ${system} system  is cleared`)
+    console.info(`The ${system} system  is cleared`)
     if(this.checkClearingSystems()) {
-      console.log("Cleared all systems!")
+      console.info("Cleared all systems!")
       this.state = INIT
       this.load()
     }
