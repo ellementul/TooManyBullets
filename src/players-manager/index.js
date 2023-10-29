@@ -9,6 +9,7 @@ const update = require("../events/players/update-players-list")
 const pingEvent = require("../events/players/ping-players")
 const pongEvent = require("../events/players/pong-players")
 
+const PLAYERS_LIMIT = 16
 const MSTIMELIMIT = 1000
 const DEF_COOLDOWN_CONNECT = 20
 class PlayersManager extends Member {
@@ -21,16 +22,16 @@ class PlayersManager extends Member {
     this.coolDownConnect = DEF_COOLDOWN_CONNECT
 
     this.onEvent(startSessionEvent, () => this.start())
+    this.onEvent(time, payload => this.tick(payload))
+    this.onEvent(pongEvent, payload => this.pong(payload))
   }
 
   start() {
-    this.onEvent(time, payload => this.tick(payload))
-    this.onEvent(pongEvent, payload => this.pong(payload))
     this.send(readyEvent)
   }
 
   pong({  playerUuid }) {
-    if(!this._players.has(playerUuid))
+    if(!this._players.has(playerUuid) && this._players.size < PLAYERS_LIMIT)
       this.connectPlayer(playerUuid)
 
     if(this._players.has(playerUuid))

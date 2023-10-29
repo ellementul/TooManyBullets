@@ -170,7 +170,7 @@ class Tiles extends Member {
     if(this.cooldownDestroy > 0)
       return this.cooldownDestroy--
     else
-      this.cooldownDestroy = Math.floor(256 / this.grounds.plan.cells.size)
+      this.cooldownDestroy = Math.floor(1024 / this.grounds.plan.cells.size)
 
     const allBorderPlatformsPositions = this.grounds.plan.cells.toArray()
     if(allBorderPlatformsPositions.length > 0) {

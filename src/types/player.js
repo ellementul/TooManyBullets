@@ -1,5 +1,5 @@
 const { Types } = require('@ellementul/united-events-environment')
-const MAX_PLAYERS = 50
+const MAX_PLAYERS = 16
 const PlayerType = Types.Object.Def({
   uuid: Types.UUID.Def()
 })
